@@ -1,4 +1,4 @@
-project('Gmixer', 'cpp', version: get_option('VERSION'))
+project('GMixer', 'cpp', version: '0.0.1')
 
 gst_libs = [
   dependency('glib-2.0', version: '>=2.40'),
