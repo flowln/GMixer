@@ -6,8 +6,12 @@ gst_libs = [
   dependency('gstreamer-1.0')
 ]
 
-qt_libs = [
-  dependency('qt5', modules: ['Widgets']),
+cpp_libs = [
+  dependency('sigc++-3.0')
+]
+
+gtk_libs = [
+  dependency('gtkmm-4.0')
 ]
 
 subdir('src')
