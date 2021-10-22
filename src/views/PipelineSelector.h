@@ -7,8 +7,11 @@
 
 #include <glibmm/refptr.h>
 
+#include <gtkmm/window.h>
+
 #include <gtkmm/listbox.h>
 #include <gtkmm/label.h>
+#include <gtkmm/button.h>
 
 #include <giomm/liststore.h>
 
@@ -21,9 +24,14 @@ class PipelineWidgetHelper{
 
 class PipelineSelector{
     public:
-        PipelineSelector();
+        PipelineSelector(Gtk::Window* main_window);
 
         Gtk::Widget* the() { return &m_listbox; };
+
+        void add_pipeline();
     private:
+        Gtk::Window* m_main_window;
+
         Gtk::ListBox m_listbox;
+        Gtk::Button m_addbutton;
 };

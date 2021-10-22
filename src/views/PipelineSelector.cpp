@@ -1,5 +1,7 @@
 #include "PipelineSelector.h"
 
+#include <sigc++/functors/mem_fun.h>
+
 PipelineWidgetHelper::PipelineWidgetHelper(){}
 
 Gtk::Widget* PipelineWidgetHelper::createPipelineEntry(const std::shared_ptr<Pipeline> item)
@@ -11,11 +13,22 @@ Gtk::Widget* PipelineWidgetHelper::createPipelineEntry(const std::shared_ptr<Pip
     return w;
 }
 
-PipelineSelector::PipelineSelector()
+PipelineSelector::PipelineSelector(Gtk::Window* main_window)
+    : m_main_window(main_window)
+    , m_addbutton("+")
+
 {
-    auto p1 = Pipeline::create("joaquim");
-    auto p2 = Pipeline::create("maria");
-    m_listbox.append(*PipelineWidgetHelper::createPipelineEntry(p1));
-    m_listbox.append(*PipelineWidgetHelper::createPipelineEntry(p2));
+    m_addbutton.signal_clicked().connect(sigc::mem_fun(*this, &PipelineSelector::add_pipeline));
+
+    m_listbox.append(m_addbutton);
 }
 
+void PipelineSelector::add_pipeline()
+{
+    static int id = 0;
+
+    //TODO: Add dialog asking for name / icon / other info about pipeline
+
+    auto p = Pipeline::create("Pipeline " + std::to_string(id++));
+    m_listbox.append(*PipelineWidgetHelper::createPipelineEntry(p));
+}

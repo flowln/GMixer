@@ -7,7 +7,7 @@ MainWindow::MainWindow()
     set_default_size(900, 450);
 
     auto es = Gtk::make_managed<ElementSelector>();
-    m_ps = new PipelineSelector(); 
+    m_ps = new PipelineSelector(this); 
     
     m_main_container.attach(*es, 1, 1, 1, 1);
     m_main_container.attach(*m_ps->the(), 0, 0, 1, 3);
