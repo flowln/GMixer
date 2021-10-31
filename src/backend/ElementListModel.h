@@ -13,7 +13,7 @@ class ElementRecord : public Gtk::TreeModelColumnRecord{
         Gtk::TreeModelColumn<Glib::ustring> m_package;
 };
 
-enum ElementType{
+enum class ElementType{
     SOURCE, FILTER, SINK
 };
 

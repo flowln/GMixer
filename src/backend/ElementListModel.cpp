@@ -18,13 +18,13 @@ gboolean checkFeatureType(GstPluginFeature* feature, ElementType& type){
     
     bool result = false;
     switch(type){
-        case SOURCE:
+        case ElementType::SOURCE:
             result = (e->numsinkpads == 0);
             break;
-        case FILTER:
+        case ElementType::FILTER:
             result = ((e->numsinkpads != 0) && (e->numsrcpads != 0));
             break;
-        case SINK:
+        case ElementType::SINK:
             result = (e->numsrcpads == 0);
             break;
         default:

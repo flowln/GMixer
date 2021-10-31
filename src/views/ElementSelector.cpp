@@ -1,3 +1,4 @@
+#include "backend/ElementListModel.h"
 #include "ElementSelector.h"
 
 ElementList::ElementList(const ElementType& type)
@@ -8,6 +9,8 @@ ElementList::ElementList(const ElementType& type)
     m_view->set_enable_search(true);
     set_child(*m_view);
 }
+
+ElementRecord& ElementList::getModelRecord() const{ return m_model->getRecord(); };
 
 ElementSelector::ElementSelector(Gtk::Window* main_window)
     : m_main_window(main_window)

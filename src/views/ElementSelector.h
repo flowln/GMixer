@@ -3,8 +3,6 @@
  * */
 #pragma once
 
-#include "backend/ElementListModel.h"
-
 #include <gtkmm/liststore.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/scrolledwindow.h>
@@ -12,6 +10,8 @@
 
 // Forward-declaration
 class ElementListModel;
+class ElementRecord;
+enum class ElementType;
 
 class ElementList : public Gtk::ScrolledWindow{
     public:
@@ -30,8 +30,7 @@ class ElementList : public Gtk::ScrolledWindow{
         inline void setAllSearchable() 
             { int k = m_view->get_n_columns(); for(int i = 0; i < k; i++) setSearchable(i); };
 
-        inline ElementRecord& getModelRecord() const 
-            { return m_model->getRecord(); };
+        inline ElementRecord& getModelRecord() const;
     private:
         std::unique_ptr<Gtk::TreeView> m_view;
         std::unique_ptr<ElementListModel> m_model;    
@@ -44,6 +43,5 @@ class ElementSelector {
         Gtk::Notebook* the() const { return m_notebook; };
     private: 
         Gtk::Window* m_main_window;
-
         Gtk::Notebook* m_notebook = { nullptr };
 };
