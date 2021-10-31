@@ -1,11 +1,11 @@
 #include "ElementSelector.h"
-#include "gtkmm/object.h"
 
 ElementList::ElementList(const ElementType& type)
     : Gtk::ScrolledWindow()
 {
     m_model = std::make_unique<ElementListModel>(type);
     m_view = std::make_unique<Gtk::TreeView>(m_model->getModel());
+    m_view->set_enable_search(true);
     set_child(*m_view);
 }
 
@@ -16,16 +16,19 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     source_page->append_column("Element", source_page->getModelRecord().m_element_name);
     source_page->append_column("Plugin", source_page->getModelRecord().m_plugin);
     source_page->append_column("Package", source_page->getModelRecord().m_package);
+    source_page->setAllSearchable();
 
     auto filter_page = Gtk::make_managed<ElementList>(ElementType::FILTER);
     filter_page->append_column("Element", filter_page->getModelRecord().m_element_name);
     filter_page->append_column("Plugin", filter_page->getModelRecord().m_plugin);
     filter_page->append_column("Package", filter_page->getModelRecord().m_package);
+    filter_page->setAllSearchable();
 
     auto sink_page   = Gtk::make_managed<ElementList>(ElementType::SINK);
     sink_page->append_column("Element", sink_page->getModelRecord().m_element_name);
     sink_page->append_column("Plugin", sink_page->getModelRecord().m_plugin);
     sink_page->append_column("Package", sink_page->getModelRecord().m_package);
+    sink_page->setAllSearchable();
 
     auto source_tab_name = Gtk::make_managed<Gtk::Label>("Sources");
     auto filter_tab_name = Gtk::make_managed<Gtk::Label>("Filters");
