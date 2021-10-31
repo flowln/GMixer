@@ -13,4 +13,5 @@ class MainWindow : public Gtk::Window {
     private: 
         Gtk::Grid m_main_container;
         PipelineSelector* m_ps;
+        ElementSelector* m_es;
 }; 

@@ -68,7 +68,7 @@ void ElementListModel::populate()
     }
     gst_plugin_list_free(plugins);
 
-    listElements();
+    //listElements();
 }
 
 void ElementListModel::listElements()
