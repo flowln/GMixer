@@ -18,7 +18,19 @@ struct plugin_info{
         }
 };
 
+struct element_info{
+    const gchar* name;
+    const gchar* description;
+
+    public:
+        ~element_info(){
+            delete[] name;
+            delete[] description;
+        }
+};
+
 class ElementUtils{
     public:
         static const plugin_info* getPluginInfo(const gchar*);
+        static const element_info* getElementInfo(const gchar*);
 };
