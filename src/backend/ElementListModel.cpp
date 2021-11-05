@@ -1,6 +1,8 @@
 #include "ElementListModel.h"
 #include "gst/gstelementfactory.h"
 
+#include <iostream>
+
 #include <gst/gst.h>
 
 ElementRecord::ElementRecord()
@@ -10,29 +12,38 @@ ElementRecord::ElementRecord()
     add(m_package);
 }
 
-gboolean checkFeatureType(GstPluginFeature* feature, ElementType& type){
-    auto e = gst_element_factory_make(gst_plugin_feature_get_name(feature), "");
-    if(!e) 
-        return false;
+gboolean checkFilter(GstElementFactory* factory)
+{
+    gboolean result;
+    auto e = gst_element_factory_create(factory, "");
+    result = (e->numsinkpads > 0) && (e->numsrcpads > 0);
+    g_object_unref(e);
+    return result;
+}
 
-    if(e->numpads == 0)
+gboolean checkFeatureType(GstPluginFeature* feature, ElementType& type){
+    auto f = gst_element_factory_find(gst_plugin_feature_get_name(feature));
+
+    if(!f)
         return false;
     
     bool result = false;
     switch(type){
         case ElementType::SOURCE:
-            result = (e->numsinkpads == 0);
+            result = gst_element_factory_list_is_type(f, GST_ELEMENT_FACTORY_TYPE_SRC);
             break;
         case ElementType::FILTER:
-            result = ((e->numsinkpads != 0) && (e->numsrcpads != 0));
+            //FIXME: How to do this without creating a new element instance?
+            result = checkFilter(f);
+
             break;
         case ElementType::SINK:
-            result = (e->numsrcpads == 0);
+            result = gst_element_factory_list_is_type(f, GST_ELEMENT_FACTORY_TYPE_SINK);
             break;
         default:
             break;
     }
-    g_object_unref(e); 
+    g_object_unref(f); 
     return result;
 }
 
