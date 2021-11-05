@@ -3,14 +3,15 @@
  * */
 #pragma once
 
-#include "gtkmm/enums.h"
-#include "gtkmm/object.h"
+#include <cstdarg>
+#include <iostream>
+
 #include <gtkmm/box.h>
 #include <gtkmm/expander.h>
-#include <gtkmm/stack.h>
 #include <gtkmm/liststore.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/scrolledwindow.h>
+#include <gtkmm/stack.h>
 #include <gtkmm/treeview.h>
 
 // Forward-declaration
@@ -42,6 +43,25 @@ class ElementList : public Gtk::ScrolledWindow{
         std::unique_ptr<ElementListModel> m_model;    
 };
 
+class OptionalInfo : public Gtk::Expander {
+    public:
+        OptionalInfo(const Glib::ustring& title) : Gtk::Expander()
+        { 
+            set_label(title);
+            m_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
+            m_box->set_halign(Gtk::Align::START);
+            set_child(*m_box); 
+        }
+        void append(Gtk::Widget* widget){ m_box->append(*widget); }
+
+        template<typename... T>
+        void appendMany(Gtk::Widget* widg, T... widgs);
+        void appendMany() const{}
+
+    private:
+        Gtk::Box* m_box;
+};
+
 class SelectedInfoPanel : public Gtk::Stack{
     public:
         SelectedInfoPanel(ElementList*);
@@ -49,29 +69,14 @@ class SelectedInfoPanel : public Gtk::Stack{
         void selectionChanged();
         void deselect();
     private:
-        class OptionalInfo : public Gtk::Expander {
-            public:
-                OptionalInfo(const Glib::ustring& title) : Gtk::Expander()
-                { 
-                    set_label(title);
-                    m_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
-                    m_box->set_halign(Gtk::Align::START);
-                    set_child(*m_box); 
-                }
-
-                void append(Gtk::Widget& widget){ m_box->append(widget); }
-            private:
-                Gtk::Box* m_box;
-        };
-
         ElementList* m_list;
 
         Gtk::Box* m_selected_info_box;
 
-        OptionalInfo m_element_info {"Element Information"};
+        OptionalInfo m_element_info {"Element Metadata"};
         Gtk::Label m_name, m_description, m_author;
 
-        OptionalInfo m_plugin_info {"Plugin Information"};
+        OptionalInfo m_plugin_info {"Plugin Metadata"};
         Gtk::Label m_plugin_name, m_plugin_description, m_plugin_version, m_plugin_license;
 
         Gtk::Label m_not_selected;

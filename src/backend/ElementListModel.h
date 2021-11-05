@@ -28,7 +28,6 @@ class ElementListModel{
     private:
         bool isPopulated { false };
         void addElement(GstPlugin* plugin, GstPluginFeature* element);
-        void listElements();
 
         ElementType m_type;
 

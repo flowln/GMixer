@@ -15,6 +15,13 @@ ElementList::ElementList(const ElementType& type)
 
 ElementRecord& ElementList::getModelRecord() const{ return m_model->getRecord(); };
 
+template <typename... T>
+void OptionalInfo::appendMany(Gtk::Widget* widg, T... widgs)
+{
+    append(widg);
+    appendMany(widgs...);
+}
+
 SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
     : Gtk::Stack()
     , m_list(associated_list)
@@ -23,28 +30,18 @@ SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
     m_selected_info_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
 
     m_name.set_xalign(0);
-    m_element_info.append(m_name);
-
     m_description.set_xalign(0);
-    m_element_info.append(m_description);
-
     m_author.set_xalign(0);
-    m_element_info.append(m_author);
 
+    m_element_info.appendMany(&m_name, &m_description, &m_author);
     m_selected_info_box->append(m_element_info);
 
     m_plugin_name.set_xalign(0);
-    m_plugin_info.append(m_plugin_name);
-
     m_plugin_description.set_xalign(0);
-    m_plugin_info.append(m_plugin_description);
-
     m_plugin_version.set_xalign(0);
-    m_plugin_info.append(m_plugin_version);
-
     m_plugin_license.set_xalign(0);
-    m_plugin_info.append(m_plugin_license);
 
+    m_plugin_info.appendMany(&m_plugin_name, &m_plugin_description, &m_plugin_version, &m_plugin_license);
     m_selected_info_box->append(m_plugin_info);
 
     add(*m_selected_info_box, "selected");

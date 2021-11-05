@@ -1,8 +1,7 @@
 #include "ElementListModel.h"
+#include "gst/gstelementfactory.h"
 
 #include <gst/gst.h>
-
-#include <iostream>
 
 ElementRecord::ElementRecord()
 {
@@ -74,19 +73,7 @@ void ElementListModel::populate()
     }
     gst_plugin_list_free(plugins);
     isPopulated = true;
-
-    //listElements();
 }
-
-void ElementListModel::listElements()
-{
-    for(auto children : m_store->children()){
-        printf("%s : %s : %s\n", children.get_value(m_records.m_element_name).c_str(), children.get_value(m_records.m_plugin).c_str(), children.get_value(m_records.m_package).c_str());
-    }
-    
-
-}
-
 
 void ElementListModel::addElement(GstPlugin* plugin, GstPluginFeature* element)
 {
