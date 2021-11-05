@@ -67,15 +67,11 @@ void SelectedInfoPanel::selectionChanged()
     m_plugin_version.set_text     (Glib::ustring::sprintf("Version: %s", plugin_info->version));
     m_plugin_license.set_text     (Glib::ustring::sprintf("License: %s", plugin_info->license));
 
-    //delete plugin_info;
-
     auto element_name = curr_selection->get_value(m_list->getModelRecord().m_element_name);
     auto element_info = ElementUtils::getElementInfo(element_name);
 
     m_name.set_text        (Glib::ustring::sprintf("Name: %s", element_name));
     m_description.set_text (Glib::ustring::sprintf("Description: %s", element_info->description));
-
-    //delete element_info;
 
     set_visible_child("selected");
 }

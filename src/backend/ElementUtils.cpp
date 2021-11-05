@@ -29,5 +29,7 @@ const element_info* ElementUtils::getElementInfo(const Glib::ustring& name)
 
     res->description = gst_element_factory_get_description(factory);
 
+    g_object_unref(factory);
+
     return res;
 }
