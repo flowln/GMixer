@@ -15,6 +15,9 @@ gboolean checkFeatureType(GstPluginFeature* feature, ElementType& type){
     auto e = gst_element_factory_make(gst_plugin_feature_get_name(feature), "");
     if(!e) 
         return false;
+
+    if(e->numpads == 0)
+        return false;
     
     bool result = false;
     switch(type){
