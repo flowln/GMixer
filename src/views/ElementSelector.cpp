@@ -2,8 +2,6 @@
 #include "backend/ElementUtils.h"
 #include "ElementSelector.h"
 
-//#include <iostream>
-
 #include <gtkmm/paned.h>
 
 ElementList::ElementList(const ElementType& type)
@@ -131,7 +129,10 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     m_notebook->insert_page(*filter_page, *filter_tab_name, 1);
     m_notebook->insert_page(*sink_page,   *sink_tab_name,   2);
 
+    m_notebook->signal_switch_page().connect(
+        [filter_page, filter_list, sink_page, sink_list](Gtk::Widget* page, guint p_num){
+            if(page == filter_page) filter_list->getModel().populate();
+            else if(page == sink_page) sink_list->getModel().populate();
+        }); 
     source_list->getModel().populate();
-    filter_list->getModel().populate();
-    sink_list->getModel().populate();
 }

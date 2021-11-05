@@ -47,6 +47,9 @@ ElementListModel::ElementListModel(ElementType type)
  * https://github.com/GStreamer/gstreamer/blob/master/tools/gst-inspect.c */
 void ElementListModel::populate()
 {
+    if(isPopulated)
+        return;
+
     auto registry = gst_registry_get();
 
     GList* plugins = gst_registry_get_plugin_list(registry);
@@ -70,6 +73,7 @@ void ElementListModel::populate()
 
     }
     gst_plugin_list_free(plugins);
+    isPopulated = true;
 
     //listElements();
 }

@@ -26,6 +26,7 @@ class ElementListModel{
         ElementRecord& getRecord() { return m_records; };
 
     private:
+        bool isPopulated { false };
         void addElement(GstPlugin* plugin, GstPluginFeature* element);
         void listElements();
 
