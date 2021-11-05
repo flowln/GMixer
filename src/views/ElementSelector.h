@@ -69,7 +69,7 @@ class SelectedInfoPanel : public Gtk::Stack{
         Gtk::Box* m_selected_info_box;
 
         OptionalInfo m_element_info {"Element Information"};
-        Gtk::Label m_name, m_description, m_origin;
+        Gtk::Label m_name, m_description, m_author;
 
         OptionalInfo m_plugin_info {"Plugin Information"};
         Gtk::Label m_plugin_name, m_plugin_description, m_plugin_version, m_plugin_license;

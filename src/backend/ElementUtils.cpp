@@ -1,7 +1,4 @@
 #include "ElementUtils.h"
-#include "gst/gstcompat.h"
-#include "gst/gstelementfactory.h"
-#include "gst/gstregistry.h"
 #include <gst/gst.h>
 
 const plugin_info* ElementUtils::getPluginInfo(const Glib::ustring& name)
@@ -28,6 +25,7 @@ const element_info* ElementUtils::getElementInfo(const Glib::ustring& name)
     auto res = new element_info();
 
     res->description = gst_element_factory_get_description(factory);
+    res->author = gst_element_factory_get_author(factory);
 
     g_object_unref(factory);
 

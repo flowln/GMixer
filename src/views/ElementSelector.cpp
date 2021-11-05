@@ -30,8 +30,8 @@ SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
     m_description.set_xalign(0);
     m_element_info.append(m_description);
 
-    m_origin.set_xalign(0);
-    m_element_info.append(m_origin);
+    m_author.set_xalign(0);
+    m_element_info.append(m_author);
 
     m_selected_info_box->append(m_element_info);
 
@@ -72,6 +72,7 @@ void SelectedInfoPanel::selectionChanged()
 
     m_name.set_text        (Glib::ustring::sprintf("Name: %s", element_name));
     m_description.set_text (Glib::ustring::sprintf("Description: %s", element_info->description));
+    m_author.set_text      (Glib::ustring::sprintf("Author: %s", element_info->author));
 
     set_visible_child("selected");
 }

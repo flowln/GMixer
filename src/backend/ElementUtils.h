@@ -11,6 +11,7 @@ struct plugin_info{
 
 struct element_info{
     const gchar* description;
+    const gchar* author;
 };
 
 class ElementUtils{
