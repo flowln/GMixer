@@ -59,33 +59,21 @@ void SelectedInfoPanel::selectionChanged()
 {
     auto curr_selection = m_list->getSelection().get_selected();
 
-    auto plugin_info = ElementUtils::getPluginInfo(curr_selection->get_value(m_list->getModelRecord().m_plugin).c_str());
+    auto plugin_name = curr_selection->get_value(m_list->getModelRecord().m_plugin);
+    auto plugin_info = ElementUtils::getPluginInfo(plugin_name);
 
-    Glib::ustring plugin_name = "Name: ";
-    plugin_name.append(plugin_info->name);
-    Glib::ustring plugin_desc = "Description: ";
-    plugin_desc.append(plugin_info->description);
-    Glib::ustring plugin_ver = "Version: ";
-    plugin_ver.append(plugin_info->version);
-    Glib::ustring plugin_license = "License: ";
-    plugin_license.append(plugin_info->license);
-
-    m_plugin_name.set_text(plugin_name);
-    m_plugin_description.set_text(plugin_desc);
-    m_plugin_version.set_text(plugin_ver);
-    m_plugin_license.set_text(plugin_license);
+    m_plugin_name.set_text        (Glib::ustring::sprintf("Name: %s", plugin_name));
+    m_plugin_description.set_text (Glib::ustring::sprintf("Description: %s", plugin_info->description));
+    m_plugin_version.set_text     (Glib::ustring::sprintf("Version: %s", plugin_info->version));
+    m_plugin_license.set_text     (Glib::ustring::sprintf("License: %s", plugin_info->license));
 
     //delete plugin_info;
 
-    auto element_info = ElementUtils::getElementInfo(curr_selection->get_value(m_list->getModelRecord().m_element_name).c_str());
+    auto element_name = curr_selection->get_value(m_list->getModelRecord().m_element_name);
+    auto element_info = ElementUtils::getElementInfo(element_name);
 
-    Glib::ustring element_name = "Name: ";
-    element_name.append(element_info->name);
-    Glib::ustring element_desc = "Description: ";
-    element_desc.append(element_info->description);
-
-    m_name.set_text(element_name);
-    m_description.set_text(element_desc);
+    m_name.set_text        (Glib::ustring::sprintf("Name: %s", element_name));
+    m_description.set_text (Glib::ustring::sprintf("Description: %s", element_info->description));
 
     //delete element_info;
 
