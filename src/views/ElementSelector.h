@@ -55,7 +55,7 @@ class OptionalInfo : public Gtk::Expander {
         void append(Gtk::Widget* widget){ m_box->append(*widget); }
 
         template<typename... T>
-        void appendMany(Gtk::Widget* widg, T... widgs);
+        void appendMany(Gtk::Label* widg, T... widgs);
         void appendMany() const{}
 
     private:
@@ -78,6 +78,9 @@ class SelectedInfoPanel : public Gtk::Stack{
 
         OptionalInfo m_plugin_info {"Plugin Metadata"};
         Gtk::Label m_plugin_name, m_plugin_description, m_plugin_version, m_plugin_license;
+
+        OptionalInfo m_pads_info {"Pads Information"};
+        Gtk::Label m_src_num, m_src_caps, m_sink_num, m_sink_caps;
 
         Gtk::Label m_not_selected;
 };

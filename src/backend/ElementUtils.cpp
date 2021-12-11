@@ -1,6 +1,8 @@
 #include "ElementUtils.h"
 #include <gst/gst.h>
 
+#include <iostream>
+
 const plugin_info* ElementUtils::getPluginInfo(const Glib::ustring& name)
 {
     auto plugin = gst_plugin_load_by_name(name.c_str());
@@ -26,6 +28,49 @@ const element_info* ElementUtils::getElementInfo(const Glib::ustring& name)
 
     res->description = gst_element_factory_get_description(factory);
     res->author = gst_element_factory_get_author(factory);
+
+    auto src_pads = new std::list<pad_info>(2);
+    auto sink_pads = new std::list<pad_info>(2);
+
+    guint num_srcs = 0;
+    guint num_sinks = 0;
+
+    auto templates = gst_element_factory_get_static_pad_templates(factory);
+    while(templates){
+        auto pad_template = (GstStaticPadTemplate*) (templates->data);
+        
+        auto pad_info = new struct pad_info();
+        pad_info->caps = pad_template->static_caps.string;
+        switch(pad_template->presence){
+            case(GST_PAD_ALWAYS):
+                pad_info->availability = "Always";
+                break;
+            case(GST_PAD_SOMETIMES):
+                pad_info->availability = "Sometimes";
+                break;
+            case(GST_PAD_REQUEST):
+                pad_info->availability = "Request";
+                break;
+        }
+
+        if(pad_template->direction == GST_PAD_SRC){
+            src_pads->push_front(*pad_info);
+            num_srcs += 1;
+        }
+        else if(pad_template->direction == GST_PAD_SINK){
+            sink_pads->push_front(*pad_info);
+            num_sinks += 1;
+        }
+
+        printf("%s\n", gst_caps_to_string(gst_static_pad_template_get_caps(pad_template)));
+        templates = templates->next;
+    }
+
+    res->num_srcs = num_srcs;
+    res->num_sinks = num_sinks;
+
+    res->src_pads = src_pads;
+    res->sink_pads = sink_pads;
 
     g_object_unref(factory);
 

@@ -16,8 +16,10 @@ ElementList::ElementList(const ElementType& type)
 ElementRecord& ElementList::getModelRecord() const{ return m_model->getRecord(); };
 
 template <typename... T>
-void OptionalInfo::appendMany(Gtk::Widget* widg, T... widgs)
+void OptionalInfo::appendMany(Gtk::Label* widg, T... widgs)
 {
+    widg->set_xalign(0);
+
     append(widg);
     appendMany(widgs...);
 }
@@ -29,20 +31,14 @@ SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
 {
     m_selected_info_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
 
-    m_name.set_xalign(0);
-    m_description.set_xalign(0);
-    m_author.set_xalign(0);
-
     m_element_info.appendMany(&m_name, &m_description, &m_author);
     m_selected_info_box->append(m_element_info);
 
-    m_plugin_name.set_xalign(0);
-    m_plugin_description.set_xalign(0);
-    m_plugin_version.set_xalign(0);
-    m_plugin_license.set_xalign(0);
-
     m_plugin_info.appendMany(&m_plugin_name, &m_plugin_description, &m_plugin_version, &m_plugin_license);
     m_selected_info_box->append(m_plugin_info);
+
+    m_pads_info.appendMany(&m_src_num, &m_src_caps, &m_sink_num, &m_sink_caps);
+    m_selected_info_box->append(m_pads_info);
 
     add(*m_selected_info_box, "selected");
     add(m_not_selected, "not_selected");
@@ -65,9 +61,33 @@ void SelectedInfoPanel::selectionChanged()
     auto element_name = curr_selection->get_value(m_list->getModelRecord().m_element_name);
     auto element_info = ElementUtils::getElementInfo(element_name);
 
-    m_name.set_text        (Glib::ustring::sprintf("Name: %s", element_name));
-    m_description.set_text (Glib::ustring::sprintf("Description: %s", element_info->description));
-    m_author.set_text      (Glib::ustring::sprintf("Author: %s", element_info->author));
+    m_name.set_text         (Glib::ustring::sprintf("Name: %s", element_name));
+    m_description.set_text  (Glib::ustring::sprintf("Description: %s", element_info->description));
+    m_author.set_text       (Glib::ustring::sprintf("Author: %s", element_info->author));
+
+    m_src_num.set_text      (Glib::ustring::sprintf("Number of source pads: %d", element_info->num_srcs));
+    m_src_caps.set_text     ("");
+
+    guint src_num = 1;
+    for(auto src_pad : *element_info->src_pads){
+        if(src_num > element_info->num_srcs) 
+            break;
+
+        m_src_caps.set_text(Glib::ustring::sprintf("%s\nSource pad #%d:\n\tCapabilities: %s\n\tAvailability: %s\n", 
+                    m_src_caps.get_text(), src_num++, src_pad.caps, src_pad.availability));
+    }
+
+    m_sink_num.set_text     (Glib::ustring::sprintf("Number of sink pads: %d", element_info->num_sinks));
+    m_sink_caps.set_text    ("");
+
+    guint sink_num = 1;
+    for(auto sink_pad : *element_info->sink_pads){
+        if(sink_num > element_info->num_sinks) 
+            break;
+
+        m_sink_caps.set_text(Glib::ustring::sprintf("%s\nSink pad #%d:\n\tCapabilities: %s\n\tAvailability: %s\n", 
+                    m_sink_caps.get_text(), sink_num++, sink_pad.caps, sink_pad.availability));
+    }
 
     set_visible_child("selected");
 }
@@ -131,5 +151,6 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
             if(page == filter_page) filter_list->getModel().populate();
             else if(page == sink_page) sink_list->getModel().populate();
         }); 
+
     source_list->getModel().populate();
 }
