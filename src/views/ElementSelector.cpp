@@ -1,8 +1,10 @@
 #include "backend/ElementListModel.h"
 #include "backend/ElementUtils.h"
 #include "ElementSelector.h"
+#include "gtkmm/enums.h"
 
 #include <gtkmm/paned.h>
+#include <gtkmm/window.h>
 
 ElementList::ElementList(const ElementType& type)
     : Gtk::ScrolledWindow()
@@ -14,6 +16,15 @@ ElementList::ElementList(const ElementType& type)
 }
 
 ElementRecord& ElementList::getModelRecord() const{ return m_model->getRecord(); };
+
+OptionalInfo::OptionalInfo(const Glib::ustring& title)
+: Gtk::Expander()
+{ 
+    set_label(title);
+    m_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
+    m_box->set_halign(Gtk::Align::BASELINE);
+    set_child(*m_box); 
+}
 
 template <typename... T>
 void OptionalInfo::appendMany(Gtk::Label* widg, T... widgs)
@@ -29,7 +40,8 @@ SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
     , m_list(associated_list)
     , m_not_selected("No element is selected.")
 {
-    m_selected_info_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
+    m_selected_info_box = Gtk::make_managed<Gtk::ListBox>();
+    m_selected_info_box->set_selection_mode(Gtk::SelectionMode::NONE);
 
     m_element_info.appendMany(&m_name, &m_description, &m_author);
     m_selected_info_box->append(m_element_info);
@@ -53,19 +65,19 @@ void SelectedInfoPanel::selectionChanged()
     auto plugin_name = curr_selection->get_value(m_list->getModelRecord().m_plugin);
     auto plugin_info = ElementUtils::getPluginInfo(plugin_name);
 
-    m_plugin_name.set_text        (Glib::ustring::sprintf("Name: %s", plugin_name));
-    m_plugin_description.set_text (Glib::ustring::sprintf("Description: %s", plugin_info->description));
-    m_plugin_version.set_text     (Glib::ustring::sprintf("Version: %s", plugin_info->version));
-    m_plugin_license.set_text     (Glib::ustring::sprintf("License: %s", plugin_info->license));
+    m_plugin_name.set_text        (Glib::ustring::sprintf("\tName: %s", plugin_name));
+    m_plugin_description.set_text (Glib::ustring::sprintf("\tDescription: %s", plugin_info->description));
+    m_plugin_version.set_text     (Glib::ustring::sprintf("\tVersion: %s", plugin_info->version));
+    m_plugin_license.set_text     (Glib::ustring::sprintf("\tLicense: %s", plugin_info->license));
 
     auto element_name = curr_selection->get_value(m_list->getModelRecord().m_element_name);
     auto element_info = ElementUtils::getElementInfo(element_name);
 
-    m_name.set_text         (Glib::ustring::sprintf("Name: %s", element_name));
-    m_description.set_text  (Glib::ustring::sprintf("Description: %s", element_info->description));
-    m_author.set_text       (Glib::ustring::sprintf("Author: %s", element_info->author));
+    m_name.set_text         (Glib::ustring::sprintf("\tName: %s", element_name));
+    m_description.set_text  (Glib::ustring::sprintf("\tDescription: %s", element_info->description));
+    m_author.set_text       (Glib::ustring::sprintf("\tAuthor: %s", element_info->author));
 
-    m_src_num.set_text      (Glib::ustring::sprintf("Number of source pads: %d", element_info->num_srcs));
+    m_src_num.set_text      (Glib::ustring::sprintf("\tNumber of source pads: %d", element_info->num_srcs));
     m_src_caps.set_text     ("");
 
     guint src_num = 1;
@@ -73,11 +85,11 @@ void SelectedInfoPanel::selectionChanged()
         if(src_num > element_info->num_srcs) 
             break;
 
-        m_src_caps.set_text(Glib::ustring::sprintf("%s\nSource pad #%d:\n\tCapabilities: %s\n\tAvailability: %s\n", 
+        m_src_caps.set_text(Glib::ustring::sprintf("%s\n\tSource pad #%d:\n\t\tCapabilities: %s\n\t\tAvailability: %s\n", 
                     m_src_caps.get_text(), src_num++, src_pad.caps, src_pad.availability));
     }
 
-    m_sink_num.set_text     (Glib::ustring::sprintf("Number of sink pads: %d", element_info->num_sinks));
+    m_sink_num.set_text     (Glib::ustring::sprintf("\tNumber of sink pads: %d", element_info->num_sinks));
     m_sink_caps.set_text    ("");
 
     guint sink_num = 1;
@@ -85,7 +97,7 @@ void SelectedInfoPanel::selectionChanged()
         if(sink_num > element_info->num_sinks) 
             break;
 
-        m_sink_caps.set_text(Glib::ustring::sprintf("%s\nSink pad #%d:\n\tCapabilities: %s\n\tAvailability: %s\n", 
+        m_sink_caps.set_text(Glib::ustring::sprintf("%s\n\tSink pad #%d:\n\t\tCapabilities: %s\n\t\tAvailability: %s\n", 
                     m_sink_caps.get_text(), sink_num++, sink_pad.caps, sink_pad.availability));
     }
 
@@ -96,6 +108,7 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     : m_main_window(main_window)
 {
     auto source_page = Gtk::make_managed<Gtk::Paned>();
+    source_page->set_resize_end_child(false);
 
     auto source_list = Gtk::make_managed<ElementList>(ElementType::SOURCE);
     source_list->append_column("Element", source_list->getModelRecord().m_element_name);
@@ -110,6 +123,7 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     source_page->set_end_child(*source_info);
 
     auto filter_page = Gtk::make_managed<Gtk::Paned>();
+    filter_page->set_resize_end_child(false);
 
     auto filter_list = Gtk::make_managed<ElementList>(ElementType::FILTER);
     filter_list->append_column("Element", filter_list->getModelRecord().m_element_name);
@@ -124,6 +138,7 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     filter_page->set_end_child(*filter_info);
 
     auto sink_page = Gtk::make_managed<Gtk::Paned>();
+    sink_page->set_resize_end_child(false);
 
     auto sink_list   = Gtk::make_managed<ElementList>(ElementType::SINK);
     sink_list->append_column("Element", sink_list->getModelRecord().m_element_name);
@@ -146,11 +161,22 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     m_notebook->insert_page(*filter_page, *filter_tab_name, 1);
     m_notebook->insert_page(*sink_page,   *sink_tab_name,   2);
 
+    // FIXME: The source page separator position is different from the filter / sink ones,
+    // and I could not find a way to make them equal without throwing magical numbers everywhere...
+    // Maybe if there was a way to make the source page behave the same way the other 2 pages? :(
+
     m_notebook->signal_switch_page().connect(
         [filter_page, filter_list, sink_page, sink_list](Gtk::Widget* page, guint p_num){
-            if(page == filter_page) filter_list->getModel().populate();
-            else if(page == sink_page) sink_list->getModel().populate();
+            if(page == filter_page){ 
+                filter_list->getModel().populate();
+                filter_page->set_position(filter_page->get_parent()->get_width()/2);
+            }
+            else if(page == sink_page){ 
+                sink_list->getModel().populate();
+                sink_page->set_position(sink_page->get_parent()->get_width()/2);
+            }
         }); 
 
     source_list->getModel().populate();
+    source_page->set_position(source_page->get_width()/2);
 }

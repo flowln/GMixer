@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include <gtkmm/box.h>
+#include <gtkmm/listbox.h>
 #include <gtkmm/expander.h>
 #include <gtkmm/liststore.h>
 #include <gtkmm/notebook.h>
@@ -45,13 +46,7 @@ class ElementList : public Gtk::ScrolledWindow{
 
 class OptionalInfo : public Gtk::Expander {
     public:
-        OptionalInfo(const Glib::ustring& title) : Gtk::Expander()
-        { 
-            set_label(title);
-            m_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
-            m_box->set_halign(Gtk::Align::START);
-            set_child(*m_box); 
-        }
+        OptionalInfo(const Glib::ustring& title);
         void append(Gtk::Widget* widget){ m_box->append(*widget); }
 
         template<typename... T>
@@ -71,7 +66,7 @@ class SelectedInfoPanel : public Gtk::Stack{
     private:
         ElementList* m_list;
 
-        Gtk::Box* m_selected_info_box;
+        Gtk::ListBox* m_selected_info_box;
 
         OptionalInfo m_element_info {"Element Metadata"};
         Gtk::Label m_name, m_description, m_author;
