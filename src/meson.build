@@ -2,6 +2,7 @@
 sources = files([
   'main.cpp',
   'MainWindow.cpp',
+  'HeaderBar.cpp',
   'views/ElementSelector.cpp',
   'views/PipelineSelector.cpp',
   'backend/Pipeline.cpp',

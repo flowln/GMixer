@@ -1,10 +1,13 @@
 #include "MainWindow.h"
 
+#include "HeaderBar.h"
+
 MainWindow::MainWindow()
     : m_main_container()
 { 
     set_title("GMixer");
     set_default_size(900, 450);
+    set_titlebar(*HeaderBar::create());
 
     m_main_container.set_row_homogeneous(true);
     m_main_container.set_column_homogeneous(true);

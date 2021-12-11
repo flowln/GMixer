@@ -11,7 +11,6 @@
 
 #include <gtkmm/listbox.h>
 #include <gtkmm/label.h>
-#include <gtkmm/button.h>
 
 #include <giomm/liststore.h>
 
@@ -33,5 +32,4 @@ class PipelineSelector{
         Gtk::Window* m_main_window;
 
         Gtk::ListBox m_listbox;
-        Gtk::Button m_addbutton;
 };

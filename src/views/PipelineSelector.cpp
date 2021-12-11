@@ -1,4 +1,5 @@
-#include "PipelineSelector.h"
+#include "views/PipelineSelector.h"
+#include "HeaderBar.h"
 
 #include <sigc++/functors/mem_fun.h>
 
@@ -15,12 +16,17 @@ Gtk::Widget* PipelineWidgetHelper::createPipelineEntry(const std::shared_ptr<Pip
 
 PipelineSelector::PipelineSelector(Gtk::Window* main_window)
     : m_main_window(main_window)
-    , m_addbutton("+")
 
 {
-    m_addbutton.signal_clicked().connect(sigc::mem_fun(*this, &PipelineSelector::add_pipeline));
+    HeaderBar::setAddButtonCallback(sigc::mem_fun(*this, &PipelineSelector::add_pipeline));
 
-    m_listbox.append(m_addbutton);
+    m_listbox.signal_row_selected().connect(
+        [](Gtk::ListBoxRow* row){
+            auto label = dynamic_cast<Gtk::Label*>(row->get_child());
+            if(!label)
+                return;
+            HeaderBar::setTitleText(label->get_text());
+        });
 }
 
 void PipelineSelector::add_pipeline()
