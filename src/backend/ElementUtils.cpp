@@ -1,8 +1,6 @@
 #include "ElementUtils.h"
 #include <gst/gst.h>
 
-#include <iostream>
-
 const plugin_info* ElementUtils::getPluginInfo(const Glib::ustring& name)
 {
     auto plugin = gst_plugin_load_by_name(name.c_str());
@@ -62,7 +60,6 @@ const element_info* ElementUtils::getElementInfo(const Glib::ustring& name)
             num_sinks += 1;
         }
 
-        printf("%s\n", gst_caps_to_string(gst_static_pad_template_get_caps(pad_template)));
         templates = templates->next;
     }
 
