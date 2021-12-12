@@ -7,7 +7,10 @@
 class Pipeline : public Glib::Object {
     public:
         Pipeline(Glib::ustring name);
+        Pipeline(GstPipeline* gst_pipeline);
         ~Pipeline();
+
+        static Pipeline* createFromString(const gchar* name, const gchar* repr);
 
         static gboolean handleErrorMessage(GstBus*, GstMessage*, gpointer);
         static gboolean handleWarningMessage(GstBus*, GstMessage*, gpointer);
