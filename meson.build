@@ -1,4 +1,4 @@
-project('GMixer', 'cpp', version: '0.0.1')
+project('GMixer', 'cpp', version: '0.0.2', default_options : ['cpp_std=c++17', 'cpp_args=-Wall'])
 
 gst_libs = [
   dependency('glib-2.0', version: '>=2.40'),
@@ -15,4 +15,8 @@ gtk_libs = [
   dependency('gtkmm-4.0')
 ]
 
+sources = files([])
+
 subdir('src')
+
+executable('gmixer', sources, dependencies: [gst_libs, gtk_libs, cpp_libs], install: true, include_directories: 'src/')

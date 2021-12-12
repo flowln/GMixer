@@ -1,14 +1,10 @@
 
-sources = files([
+sources += files([
   'main.cpp',
   'MainWindow.cpp',
-  'HeaderBar.cpp',
-  'views/ElementSelector.cpp',
-  'views/PipelineSelector.cpp',
-  'backend/Pipeline.cpp',
-  'backend/PipelineCreation.cpp',
-  'backend/ElementListModel.cpp',
-  'backend/ElementUtils.cpp'
+  'HeaderBar.cpp'
 ])
 
-executable('gmixer', sources, dependencies: [gst_libs, gtk_libs, cpp_libs])
+subdir('views')
+subdir('backend')
+
