@@ -3,9 +3,6 @@
  * */
 #pragma once
 
-#include <cstdarg>
-#include <iostream>
-
 #include <gtkmm/box.h>
 #include <gtkmm/listbox.h>
 #include <gtkmm/expander.h>

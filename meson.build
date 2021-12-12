@@ -7,7 +7,8 @@ gst_libs = [
 ]
 
 cpp_libs = [
-  dependency('sigc++-3.0')
+  dependency('sigc++-3.0'),
+  dependency('threads')
 ]
 
 gtk_libs = [

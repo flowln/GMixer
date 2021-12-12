@@ -1,10 +1,10 @@
 #include "backend/ElementListModel.h"
 #include "backend/ElementUtils.h"
-#include "ElementSelector.h"
-#include "gtkmm/enums.h"
+#include "views/ElementSelector.h"
 
 #include <gtkmm/paned.h>
-#include <gtkmm/window.h>
+
+#include <thread>
 
 ElementList::ElementList(const ElementType& type)
     : Gtk::ScrolledWindow()
@@ -18,7 +18,7 @@ ElementList::ElementList(const ElementType& type)
 ElementRecord& ElementList::getModelRecord() const{ return m_model->getRecord(); };
 
 OptionalInfo::OptionalInfo(const Glib::ustring& title)
-: Gtk::Expander()
+    : Gtk::Expander()
 { 
     set_label(title);
     m_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
@@ -168,11 +168,15 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     m_notebook->signal_switch_page().connect(
         [filter_page, filter_list, sink_page, sink_list](Gtk::Widget* page, guint p_num){
             if(page == filter_page){ 
-                filter_list->getModel().populate();
+                std::thread populate {[&filter_list]{ filter_list->getModel().populate(); }};
+                populate.detach();
+
                 filter_page->set_position(filter_page->get_parent()->get_width()/2);
             }
             else if(page == sink_page){ 
-                sink_list->getModel().populate();
+                std::thread populate {[&sink_list]{ sink_list->getModel().populate(); }};
+                populate.detach();
+
                 sink_page->set_position(sink_page->get_parent()->get_width()/2);
             }
         }); 

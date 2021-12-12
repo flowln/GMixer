@@ -1,8 +1,7 @@
 #pragma once
 
-#include <glibmm/object.h>
 #include <gtkmm/liststore.h>
-#include <gst/gstelement.h>
+#include <gst/gst.h>
 
 class ElementRecord : public Gtk::TreeModelColumnRecord{
     public:

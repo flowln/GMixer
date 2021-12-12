@@ -1,9 +1,4 @@
 #include "ElementListModel.h"
-#include "gst/gstelementfactory.h"
-
-#include <iostream>
-
-#include <gst/gst.h>
 
 ElementRecord::ElementRecord()
 {
@@ -88,7 +83,7 @@ void ElementListModel::populate()
 
 void ElementListModel::addElement(GstPlugin* plugin, GstPluginFeature* element)
 {
-    auto iter = m_store->prepend();
+    auto iter = m_store->append();
 
     (*iter)[m_records.m_element_name] = gst_element_get_name(element); 
     (*iter)[m_records.m_plugin] = gst_plugin_get_name(plugin); 
