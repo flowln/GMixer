@@ -1,7 +1,5 @@
 #include "HeaderBar.h"
 
-#include <gtkmm/object.h>
-
 HeaderBar* HeaderBar::s_instance = nullptr;
 
 Gtk::HeaderBar* HeaderBar::create()

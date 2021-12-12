@@ -27,7 +27,8 @@ class PipelineSelector{
 
         Gtk::Widget* the() { return &m_listbox; };
 
-        void add_pipeline();
+        void createPipeline();
+        void addPipeline(Glib::RefPtr<Pipeline>);
     private:
         Gtk::Window* m_main_window;
 

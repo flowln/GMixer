@@ -6,6 +6,7 @@ sources = files([
   'views/ElementSelector.cpp',
   'views/PipelineSelector.cpp',
   'backend/Pipeline.cpp',
+  'backend/PipelineCreation.cpp',
   'backend/ElementListModel.cpp',
   'backend/ElementUtils.cpp'
 ])

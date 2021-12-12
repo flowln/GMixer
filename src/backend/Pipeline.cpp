@@ -1,14 +1,7 @@
 #include "backend/Pipeline.h"
-#include "glibmm/refptr.h"
-#include <memory>
-
-std::shared_ptr<Pipeline> Pipeline::create(const Glib::ustring& name)
-{
-    return std::shared_ptr<Pipeline>(new Pipeline(name));
-}
 
 Pipeline::Pipeline(Glib::ustring name)
-    :m_name(name)
+    : m_name(name)
 {
     m_pipeline = GST_PIPELINE( gst_pipeline_new(name.c_str()) );
 
