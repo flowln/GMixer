@@ -1,4 +1,5 @@
 #include "backend/PipelineCreation.h"
+#include "views/PipelineSelector.h"
 
 #include <gtkmm/application.h>
 #include <gtkmm/dialog.h>
@@ -8,7 +9,7 @@
 
 Gtk::Window* PipelineFactory::s_main_window = nullptr;
 
-void PipelineFactory::createPipeline(sigc::slot<void(Glib::RefPtr<Pipeline>)> const& callback)
+void PipelineFactory::createPipeline()
 {
     if(!s_main_window)
         return;
@@ -43,10 +44,10 @@ void PipelineFactory::createPipeline(sigc::slot<void(Glib::RefPtr<Pipeline>)> co
         });
 
     dialog->signal_response().connect(
-        [callback, dialog, name_entry](int response_id){
+        [dialog, name_entry](int response_id){
             if(response_id == GTK_RESPONSE_OK){
                 auto name = name_entry->get_text();
-                callback(Glib::make_refptr_for_instance(new Pipeline(name)));
+                PipelineSelector::getInstance()->addPipeline(Glib::make_refptr_for_instance(new Pipeline(name)));
             }
 
             dialog->close();
@@ -54,4 +55,9 @@ void PipelineFactory::createPipeline(sigc::slot<void(Glib::RefPtr<Pipeline>)> co
     
     dialog->show();
 
+}
+
+void PipelineFactory::createPipelineFromFile()
+{
+    PipelineSelector::getInstance()->addPipeline(Glib::make_refptr_for_instance(Pipeline::createFromString("abc", "audiotestsrc ! fakesink")));
 }

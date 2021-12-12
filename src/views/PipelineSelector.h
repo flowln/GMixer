@@ -23,14 +23,20 @@ class PipelineWidgetHelper{
 
 class PipelineSelector{
     public:
-        PipelineSelector(Gtk::Window* main_window);
+        static PipelineSelector* create(Gtk::Window* main_window);
+        static PipelineSelector* getInstance() { return s_instance; };
 
         Gtk::Widget* the() { return &m_listbox; };
 
         void createPipeline();
-        void addPipeline(Glib::RefPtr<Pipeline>);
-    private:
-        Gtk::Window* m_main_window;
+        static void addPipeline(Glib::RefPtr<Pipeline>);
 
+    protected:
+        PipelineSelector(Gtk::Window* main_window);
+
+    private:
+        static PipelineSelector* s_instance;
+
+        Gtk::Window* m_main_window;
         Gtk::ListBox m_listbox;
 };

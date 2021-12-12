@@ -2,7 +2,7 @@
 #include "views/PipelineSelector.h"
 #include "HeaderBar.h"
 
-#include <sigc++/functors/mem_fun.h>
+PipelineSelector* PipelineSelector::s_instance = nullptr;
 
 PipelineWidgetHelper::PipelineWidgetHelper(){}
 
@@ -16,12 +16,20 @@ Gtk::Widget* PipelineWidgetHelper::createPipelineEntry(const std::shared_ptr<Pip
     return w;
 }
 
+PipelineSelector* PipelineSelector::create(Gtk::Window* main_window)
+{
+    if(s_instance)
+        return s_instance;
+
+    s_instance = new PipelineSelector(main_window);
+    return s_instance;
+}
+
 PipelineSelector::PipelineSelector(Gtk::Window* main_window)
     : m_main_window(main_window)
 
 {
     PipelineFactory::setMainWindow(main_window);
-    HeaderBar::setAddButtonCallback(sigc::mem_fun(*this, &PipelineSelector::createPipeline));
 
     m_listbox.signal_row_selected().connect(
         [](Gtk::ListBoxRow* row){
@@ -32,12 +40,7 @@ PipelineSelector::PipelineSelector(Gtk::Window* main_window)
         });
 }
 
-void PipelineSelector::createPipeline()
-{
-    PipelineFactory::createPipeline(sigc::mem_fun(*this, &PipelineSelector::addPipeline));
-}
-
 void PipelineSelector::addPipeline(Glib::RefPtr<Pipeline> pipeline)
 {
-    m_listbox.append(*PipelineWidgetHelper::createPipelineEntry(pipeline));
+    getInstance()->m_listbox.append(*PipelineWidgetHelper::createPipelineEntry(pipeline));
 }

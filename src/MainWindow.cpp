@@ -13,7 +13,7 @@ MainWindow::MainWindow()
     m_main_container.set_column_homogeneous(true);
 
     m_es = new ElementSelector(this);
-    m_ps = new PipelineSelector(this); 
+    m_ps = PipelineSelector::create(this); 
 
     m_main_container.attach(*m_ps->the(), 0, 0, 1, 10);
     m_main_container.attach(*m_es->the(), 1, 6, 20, 4);

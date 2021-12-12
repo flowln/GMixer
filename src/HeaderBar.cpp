@@ -1,5 +1,9 @@
 #include "HeaderBar.h"
 
+#include "backend/PipelineCreation.h"
+
+#include <sigc++/functors/ptr_fun.h>
+
 HeaderBar* HeaderBar::s_instance = nullptr;
 
 Gtk::HeaderBar* HeaderBar::create()
@@ -18,21 +22,19 @@ void HeaderBar::setTitleText(const Glib::ustring text)
     s_instance->m_title->set_text(text);
 }
 
-
-void HeaderBar::setAddButtonCallback(sigc::slot<void(void)> const& callback)
-{
-    if(!s_instance)
-        return;
-
-    s_instance->m_add_button->signal_clicked().connect(callback);
-}
-
 HeaderBar::HeaderBar()
 {
     m_title = Gtk::make_managed<Gtk::Label>();
+
     m_add_button = Gtk::make_managed<Gtk::Button>("+");
+    m_add_button->signal_clicked().connect(sigc::ptr_fun(PipelineFactory::createPipeline));
+
+    m_import_button = Gtk::make_managed<Gtk::Button>("i");
+    m_import_button->signal_clicked().connect(sigc::ptr_fun(PipelineFactory::createPipelineFromFile));
 
     m_bar = Gtk::make_managed<Gtk::HeaderBar>();
     m_bar->set_title_widget(*m_title);
     m_bar->pack_start(*m_add_button);
+    m_bar->pack_start(*m_import_button);
 }
+
