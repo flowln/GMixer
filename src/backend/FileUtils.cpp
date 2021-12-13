@@ -24,4 +24,20 @@ namespace FileUtils{
 
         return std::make_unique<file_info>(name, command);
     }
+
+    bool saveFile(const Glib::ustring& file, const file_info& info)
+    {
+        auto keyfile = Glib::KeyFile::create();
+        keyfile->set_string("Basic", "Name", info.name);
+        keyfile->set_string("Basic", "Command", info.command);
+
+        try {
+            keyfile->save_to_file(file);
+        } catch (GFileError& e) {
+            g_printerr("[ERROR] Could not save pipeline at file %s.\n", file.c_str());
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -17,6 +17,8 @@ class Pipeline : public Glib::Object {
         static gboolean handleInfoMessage(GstBus*, GstMessage*, gpointer);
 
         Glib::ustring getName() const{ return m_name; }
+        Glib::ustring* getNameReference() { return &m_name; }
+        std::unique_ptr<const gchar*> getCommand() const;
     private:
         Glib::ustring m_name = { "" };
         GstPipeline* m_pipeline;

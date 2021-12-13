@@ -1,4 +1,5 @@
 #include "backend/Pipeline.h"
+#include "gst/gstutils.h"
 
 Pipeline::Pipeline(Glib::ustring name)
     : m_name(name)
@@ -59,6 +60,17 @@ Pipeline* Pipeline::createFromString(const gchar* name, const gchar* repr)
 
     gst_element_set_name(pipeline, std::move(name));
     return new Pipeline(GST_PIPELINE( pipeline ));
+}
+
+std::unique_ptr<const gchar*> Pipeline::getCommand() const
+{
+    if(!m_pipeline)
+        return nullptr;
+
+    GstState* state = nullptr;
+    gst_element_get_state(GST_ELEMENT( m_pipeline ), state, nullptr, GST_CLOCK_TIME_NONE);
+
+    return std::make_unique<const gchar*>(gst_element_state_get_name(*state));
 }
 
 gboolean Pipeline::handleErrorMessage(GstBus* bus, GstMessage* msg, gpointer data)

@@ -17,4 +17,5 @@ namespace FileUtils{
     };
 
     std::unique_ptr<file_info> parseFile(Glib::RefPtr<Gio::File>); 
+    bool saveFile(const Glib::ustring&, const file_info&); 
 }
