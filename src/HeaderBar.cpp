@@ -1,6 +1,9 @@
 #include "HeaderBar.h"
 
-#include "backend/PipelineCreation.h"
+#include "backend/FileUtils.h"
+#include "backend/PipelineIO.h"
+#include "backend/PipelineListModel.h"
+#include "views/PipelineSelector.h"
 
 #include <sigc++/functors/ptr_fun.h>
 

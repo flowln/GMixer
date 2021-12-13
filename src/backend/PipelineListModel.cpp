@@ -17,6 +17,16 @@ std::unique_ptr<PipelineListModel> PipelineListModel::create()
     return std::unique_ptr<PipelineListModel>(s_instance);
 }
 
+Pipeline* PipelineListModel::getPipeline(const Gtk::TreeModel::Path& path)
+{
+    if(!s_instance)
+        return nullptr;
+
+    auto pipeline = (Glib::RefPtr<Pipeline>) (*s_instance->getModel()->get_iter(path))[s_instance->getRecord().m_pipeline];
+
+    return pipeline.get();
+}
+
 PipelineListModel::PipelineListModel()
 {
     m_store = Gtk::ListStore::create(m_records);

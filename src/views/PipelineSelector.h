@@ -16,10 +16,10 @@ class PipelineSelector{
     public:
         static PipelineSelector* create(Gtk::Window* main_window);
         static PipelineSelector* getInstance() { return s_instance; };
+        static Gtk::TreeModel::Path currentPath();
 
         Gtk::Widget* the() { return m_list; };
 
-        void createPipeline();
     protected:
         PipelineSelector(Gtk::Window* main_window);
 

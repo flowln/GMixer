@@ -1,4 +1,4 @@
-#include "backend/PipelineCreation.h"
+#include "backend/PipelineIO.h"
 #include "views/PipelineSelector.h"
 #include "HeaderBar.h"
 
@@ -11,6 +11,14 @@ PipelineSelector* PipelineSelector::create(Gtk::Window* main_window)
 
     s_instance = new PipelineSelector(main_window);
     return s_instance;
+}
+
+Gtk::TreeModel::Path PipelineSelector::currentPath()
+{
+    if(!s_instance)
+        return {};
+
+    return s_instance->m_model->getModel()->get_path(s_instance->m_list->get_selection()->get_selected());
 }
 
 PipelineSelector::PipelineSelector(Gtk::Window* main_window)

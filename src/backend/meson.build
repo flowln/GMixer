@@ -3,6 +3,6 @@ sources += files([
   'ElementUtils.cpp',
   'FileUtils.cpp',
   'Pipeline.cpp',
-  'PipelineCreation.cpp',
+  'PipelineIO.cpp',
   'PipelineListModel.cpp'
 ])

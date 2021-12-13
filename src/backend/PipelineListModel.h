@@ -3,7 +3,6 @@
 #include  "backend/Pipeline.h"
 
 #include <gtkmm/liststore.h>
-#include <gst/gst.h>
 
 class PipelineRecord : public Gtk::TreeModelColumnRecord{
     public:
@@ -18,6 +17,7 @@ class PipelineListModel : public Glib::Object {
         static std::unique_ptr<PipelineListModel> create();
 
         static void addPipeline(Glib::RefPtr<Pipeline> pipeline);
+        static Pipeline* getPipeline(const Gtk::TreeModel::Path&);
 
         Glib::RefPtr<Gtk::ListStore> getModel() const { return m_store; }; 
         PipelineRecord& getRecord() { return m_records; };
