@@ -1,7 +1,6 @@
 #include "backend/FileUtils.h"
 #include "backend/PipelineCreation.h"
-#include "gtkmm/object.h"
-#include "views/PipelineSelector.h"
+#include "backend/PipelineListModel.h"
 
 #include <gtkmm/application.h>
 #include <gtkmm/dialog.h>
@@ -50,7 +49,7 @@ void PipelineFactory::createPipeline()
         [dialog, name_entry](int response_id){
             if(response_id == GTK_RESPONSE_ACCEPT){
                 auto name = name_entry->get_text();
-                PipelineSelector::getInstance()->addPipeline(Glib::make_refptr_for_instance(new Pipeline(name)));
+                PipelineListModel::addPipeline(Glib::make_refptr_for_instance(new Pipeline(name)));
             }
 
             dialog->close();
@@ -82,7 +81,7 @@ void PipelineFactory::createPipelineFromFile()
                 if(!data)
                     return;
     
-                PipelineSelector::getInstance()->addPipeline(Glib::make_refptr_for_instance(Pipeline::createFromString(data->name, data->command)));
+                PipelineListModel::addPipeline(Glib::make_refptr_for_instance(Pipeline::createFromString(data->name, data->command)));
             }
         });
 

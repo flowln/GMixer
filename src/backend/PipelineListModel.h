@@ -1,0 +1,33 @@
+#pragma once
+
+#include  "backend/Pipeline.h"
+
+#include <gtkmm/liststore.h>
+#include <gst/gst.h>
+
+class PipelineRecord : public Gtk::TreeModelColumnRecord{
+    public:
+        PipelineRecord();
+
+        Gtk::TreeModelColumn<Glib::ustring> m_pipeline_name; 
+        Gtk::TreeModelColumn<Glib::RefPtr<Pipeline>> m_pipeline; 
+};
+
+class PipelineListModel : public Glib::Object {
+    public:
+        static std::unique_ptr<PipelineListModel> create();
+
+        static void addPipeline(Glib::RefPtr<Pipeline> pipeline);
+
+        Glib::RefPtr<Gtk::ListStore> getModel() const { return m_store; }; 
+        PipelineRecord& getRecord() { return m_records; };
+
+    protected:
+        PipelineListModel();
+
+    private:
+        static PipelineListModel* s_instance;
+
+        Glib::RefPtr<Gtk::ListStore> m_store;
+        PipelineRecord m_records;
+};

@@ -32,6 +32,8 @@ HeaderBar::HeaderBar()
     m_import_button = Gtk::make_managed<Gtk::Button>("i");
     m_import_button->signal_clicked().connect(sigc::ptr_fun(PipelineFactory::createPipelineFromFile));
 
+    //m_save_button->signal_clicked().connect(sigc::ptr_fun());
+
     m_bar = Gtk::make_managed<Gtk::HeaderBar>();
     m_bar->set_title_widget(*m_title);
     m_bar->pack_start(*m_add_button);
