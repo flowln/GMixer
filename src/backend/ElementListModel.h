@@ -24,6 +24,9 @@ class ElementListModel{
         Glib::RefPtr<Gtk::ListStore> getModel() const { return m_store; };
         ElementRecord& getRecord() { return m_records; };
 
+    protected:
+        void _populate();
+
     private:
         bool isPopulated { false };
         void addElement(GstPlugin* plugin, GstPluginFeature* element);

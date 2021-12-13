@@ -156,26 +156,23 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     auto filter_tab_name = Gtk::make_managed<Gtk::Label>("Filters");
     auto sink_tab_name   = Gtk::make_managed<Gtk::Label>("Sinks");
 
-    m_notebook = Gtk::make_managed<Gtk::Notebook>();
-    m_notebook->insert_page(*source_page, *source_tab_name, 0);
-    m_notebook->insert_page(*filter_page, *filter_tab_name, 1);
-    m_notebook->insert_page(*sink_page,   *sink_tab_name,   2);
+    m_notebook.insert_page(*source_page, *source_tab_name, 0);
+    m_notebook.insert_page(*filter_page, *filter_tab_name, 1);
+    m_notebook.insert_page(*sink_page,   *sink_tab_name,   2);
 
     // FIXME: The source page separator position is different from the filter / sink ones,
     // and I could not find a way to make them equal without throwing magical numbers everywhere...
     // Maybe if there was a way to make the source page behave the same way the other 2 pages? :(
 
-    m_notebook->signal_switch_page().connect(
+    m_notebook.signal_switch_page().connect(
         [filter_page, filter_list, sink_page, sink_list](Gtk::Widget* page, guint p_num){
             if(page == filter_page){ 
-                std::thread populate {[&filter_list]{ filter_list->getModel().populate(); }};
-                populate.detach();
+                filter_list->getModel().populate(); 
 
                 filter_page->set_position(filter_page->get_parent()->get_width()/2);
             }
             else if(page == sink_page){ 
-                std::thread populate {[&sink_list]{ sink_list->getModel().populate(); }};
-                populate.detach();
+                sink_list->getModel().populate();
 
                 sink_page->set_position(sink_page->get_parent()->get_width()/2);
             }

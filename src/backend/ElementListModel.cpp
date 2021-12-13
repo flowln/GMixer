@@ -1,5 +1,7 @@
 #include "ElementListModel.h"
 
+#include <thread>
+
 ElementRecord::ElementRecord()
 {
     add(m_element_name);
@@ -48,13 +50,8 @@ ElementListModel::ElementListModel(ElementType type)
     m_store = Gtk::ListStore::create(m_records);
 }
 
-/* Heavily inspired by the gst-inspect source code
- * https://github.com/GStreamer/gstreamer/blob/master/tools/gst-inspect.c */
-void ElementListModel::populate()
+void ElementListModel::_populate()
 {
-    if(isPopulated)
-        return;
-
     auto registry = gst_registry_get();
 
     GList* plugins = gst_registry_get_plugin_list(registry);
@@ -79,6 +76,17 @@ void ElementListModel::populate()
     }
     gst_plugin_list_free(plugins);
     isPopulated = true;
+}
+
+/* Heavily inspired by the gst-inspect source code
+ * https://github.com/GStreamer/gstreamer/blob/master/tools/gst-inspect.c */
+void ElementListModel::populate()
+{
+    if(isPopulated)
+        return;
+
+    std::thread populate([this]{_populate();});
+    populate.detach();
 }
 
 void ElementListModel::addElement(GstPlugin* plugin, GstPluginFeature* element)

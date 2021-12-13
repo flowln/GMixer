@@ -16,7 +16,7 @@ MainWindow::MainWindow()
     m_ps = PipelineSelector::create(this); 
 
     m_main_container.attach(*m_ps->the(), 0, 0, 1, 10);
-    m_main_container.attach(*m_es->the(), 1, 6, 20, 4);
+    m_main_container.attach(m_es->the(), 1, 6, 20, 4);
 
     set_child(m_main_container);
 }

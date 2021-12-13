@@ -81,8 +81,8 @@ class ElementSelector {
     public:
         ElementSelector(Gtk::Window* m_main_window);
 
-        Gtk::Widget* the() const { return m_notebook; };
+        Gtk::Widget& the() { return m_notebook; };
     private: 
         Gtk::Window* m_main_window;
-        Gtk::Notebook* m_notebook = { nullptr };
+        Gtk::Notebook m_notebook;
 };
