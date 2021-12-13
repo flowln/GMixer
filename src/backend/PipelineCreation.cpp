@@ -78,6 +78,9 @@ void PipelineFactory::createPipelineFromFile()
             if(id == GTK_RESPONSE_ACCEPT){
                 auto file = dialog->get_file();
                 auto data = FileUtils::parseFile(file);
+
+                if(!data)
+                    return;
     
                 PipelineSelector::getInstance()->addPipeline(Glib::make_refptr_for_instance(Pipeline::createFromString(data->name, data->command)));
             }
