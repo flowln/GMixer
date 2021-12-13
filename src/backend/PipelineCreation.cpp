@@ -1,4 +1,6 @@
+#include "backend/FileUtils.h"
 #include "backend/PipelineCreation.h"
+#include "gtkmm/object.h"
 #include "views/PipelineSelector.h"
 
 #include <gtkmm/application.h>
@@ -63,17 +65,21 @@ void PipelineFactory::createPipelineFromFile()
     if(!s_main_window)
         return;
    
-    auto dialog = Gtk::FileChooserNative::create("Please select the pipeline to import ({name}.xml).", *s_main_window, Gtk::FileChooser::Action::OPEN, "Select", "Cancel");
+    auto dialog = Gtk::FileChooserNative::create("Please select the pipeline to import (.pipeline).", *s_main_window, Gtk::FileChooser::Action::OPEN, "Select", "Cancel");
     dialog->set_modal(true);
     dialog->set_transient_for(*s_main_window);
+
+    auto filter = Gtk::FileFilter::create();
+    filter->add_mime_type("text/plain");
+    dialog->set_filter(filter);
 
     dialog->signal_response().connect(
         [dialog](int id){
             if(id == GTK_RESPONSE_ACCEPT){
                 auto file = dialog->get_file();
-                auto data = parseFile(file);
+                auto data = FileUtils::parseFile(file);
     
-                PipelineSelector::getInstance()->addPipeline(Glib::make_refptr_for_instance(Pipeline::createFromString(&data.first, &data.second)));
+                PipelineSelector::getInstance()->addPipeline(Glib::make_refptr_for_instance(Pipeline::createFromString(data->name, data->command)));
             }
         });
 

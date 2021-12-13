@@ -1,6 +1,4 @@
 #include "backend/Pipeline.h"
-#include "gst/gstelement.h"
-#include "gst/gstparse.h"
 
 Pipeline::Pipeline(Glib::ustring name)
     : m_name(name)
