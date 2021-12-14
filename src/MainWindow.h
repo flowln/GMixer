@@ -4,6 +4,7 @@
 #include <gtkmm/window.h>
 
 #include "views/ElementSelector.h"
+#include "views/PipelineEditor.h"
 #include "views/PipelineSelector.h"
 
 class MainWindow : public Gtk::Window {
@@ -12,6 +13,8 @@ class MainWindow : public Gtk::Window {
         virtual ~MainWindow();
     private: 
         Gtk::Grid m_main_container;
-        PipelineSelector* m_ps;
-        ElementSelector* m_es;
+
+        ElementSelector* m_element_selector;
+        PipelineEditor* m_pipeline_editor;
+        PipelineSelector* m_pipeline_selector;
 }; 

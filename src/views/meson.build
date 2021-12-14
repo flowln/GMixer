@@ -3,3 +3,5 @@ sources += files([
   'PipelineEditor.cpp',
   'PipelineSelector.cpp'
 ])
+
+subdir('graph')
