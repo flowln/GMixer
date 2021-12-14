@@ -9,6 +9,9 @@ GraphViewer::GraphViewer()
     set_margin(10);
 
     set_draw_func(sigc::mem_fun(*this, &GraphViewer::draw));
+    m_nodes.push_back(new Node("one", 0, 0));
+    m_nodes.push_back(new Node("two", 500, 0));
+    m_nodes.push_back(new Node("three", 500, 200));
 }
 
 void GraphViewer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)
@@ -21,6 +24,9 @@ void GraphViewer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int h
     cr->set_source_rgba(color.get_red(), color.get_green(), color.get_blue(), color.get_alpha());
 
     //Render graph here 
+    for(auto node : m_nodes){
+        node->draw(cr);
+    }
 
     cr->fill();
 }
