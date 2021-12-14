@@ -5,17 +5,17 @@
 
 namespace FileUtils{
     struct file_info{
-        gchar* name;
-        gchar* command;
+        const gchar* name;
+        const gchar* command;
+        bool destroy = false;
 
         public:
-            file_info(gchar* name, gchar* command) 
-                : name    (std::move(name))
-                , command (std::move(command))
+            file_info(const gchar* name, const gchar* command) 
+                : name    (name)
+                , command (command)
             {}
-            ~file_info(){ delete name; delete command; }
     };
 
     std::unique_ptr<file_info> parseFile(Glib::RefPtr<Gio::File>); 
-    bool saveFile(const Glib::ustring&, const file_info&); 
+    bool saveFile(const Glib::ustring&, const file_info); 
 }

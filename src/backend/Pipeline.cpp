@@ -62,15 +62,16 @@ Pipeline* Pipeline::createFromString(const gchar* name, const gchar* repr)
     return new Pipeline(GST_PIPELINE( pipeline ));
 }
 
-std::unique_ptr<const gchar*> Pipeline::getCommand() const
+const gchar* Pipeline::getCommand() const
 {
     if(!m_pipeline)
         return nullptr;
 
-    GstState* state = nullptr;
-    gst_element_get_state(GST_ELEMENT( m_pipeline ), state, nullptr, GST_CLOCK_TIME_NONE);
+    // TODO: There's no way (it seems) to do it directly via gst...
+    // We'll probably have to iterate the pipeline and construct
+    // the command manually.
 
-    return std::make_unique<const gchar*>(gst_element_state_get_name(*state));
+    return nullptr;
 }
 
 gboolean Pipeline::handleErrorMessage(GstBus* bus, GstMessage* msg, gpointer data)

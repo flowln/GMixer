@@ -25,7 +25,7 @@ namespace FileUtils{
         return std::make_unique<file_info>(name, command);
     }
 
-    bool saveFile(const Glib::ustring& file, const file_info& info)
+    bool saveFile(const Glib::ustring& file, const file_info info)
     {
         auto keyfile = Glib::KeyFile::create();
         keyfile->set_string("Basic", "Name", info.name);

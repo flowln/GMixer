@@ -13,3 +13,8 @@ class PipelineFactory{
     private:
         static Gtk::Window* s_main_window;
 };
+
+namespace PipelineSaver{
+    void saveCurrentPipeline();
+    void savePipeline(Pipeline*);
+}

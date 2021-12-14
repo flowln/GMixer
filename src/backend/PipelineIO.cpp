@@ -1,6 +1,7 @@
 #include "backend/FileUtils.h"
 #include "backend/PipelineIO.h"
 #include "backend/PipelineListModel.h"
+#include "views/PipelineSelector.h"
 
 #include <gtkmm/application.h>
 #include <gtkmm/dialog.h>
@@ -88,3 +89,24 @@ void PipelineFactory::createPipelineFromFile()
     dialog->show();
 }
 
+namespace PipelineSaver{
+    void saveCurrentPipeline()
+    {
+        auto current_path = PipelineSelector::currentPath();
+        if(!current_path)
+            return;
+
+        auto current_pipeline = PipelineListModel::getPipeline(current_path);
+        savePipeline(current_pipeline);
+    }
+
+    void savePipeline(Pipeline* pipeline)
+    {
+        if(!pipeline)
+            return;
+
+        FileUtils::file_info info {pipeline->getName().c_str(), pipeline->getCommand()};
+
+        FileUtils::saveFile(Glib::ustring::sprintf("~/Documents/%s.pipeline", pipeline->getName()), info);
+    }
+}

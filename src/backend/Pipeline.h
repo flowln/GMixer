@@ -18,7 +18,7 @@ class Pipeline : public Glib::Object {
 
         Glib::ustring getName() const{ return m_name; }
         Glib::ustring* getNameReference() { return &m_name; }
-        std::unique_ptr<const gchar*> getCommand() const;
+        const gchar* getCommand() const;
     private:
         Glib::ustring m_name = { "" };
         GstPipeline* m_pipeline;
