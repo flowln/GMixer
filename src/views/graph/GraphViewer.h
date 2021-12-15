@@ -9,6 +9,9 @@ class GraphViewer : public Gtk::DrawingArea {
         GraphViewer();
 
         void draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height);
+
+        void pressed(int n, double x, double y);
+
     private:
         std::vector<Node*> m_nodes;
 };

@@ -1,5 +1,6 @@
 #include "views/graph/GraphViewer.h"
 
+#include <gtkmm/gestureclick.h>
 #include <cairomm/cairomm.h>
 
 GraphViewer::GraphViewer()
@@ -8,10 +9,16 @@ GraphViewer::GraphViewer()
     set_vexpand(true);
     set_margin(10);
 
+    auto controller = Gtk::GestureClick::create();
+    controller->signal_pressed().connect(sigc::mem_fun(*this, &GraphViewer::pressed), false);
+    add_controller(controller);
+
     set_draw_func(sigc::mem_fun(*this, &GraphViewer::draw));
     m_nodes.push_back(new Node("one", 0, 0));
     m_nodes.push_back(new Node("two", 500, 0));
     m_nodes.push_back(new Node("three", 500, 200));
+    for(auto node : m_nodes)
+        node->onUpdateCallback([this]{queue_draw();});
 }
 
 void GraphViewer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)
@@ -29,4 +36,13 @@ void GraphViewer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int h
     }
 
     cr->fill();
+}
+void GraphViewer::pressed(int n, double x, double y)
+{
+    for(auto node : m_nodes){
+        if(node->contains(x, y)){
+            node->onClick(x, y);
+            break;
+        }
+    }
 }
