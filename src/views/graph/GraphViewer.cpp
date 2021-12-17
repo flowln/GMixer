@@ -1,9 +1,11 @@
+#include "views/PipelineEditor.h"
 #include "views/graph/GraphViewer.h"
 
 #include <cairomm/cairomm.h>
 
-GraphViewer::GraphViewer()
+GraphViewer::GraphViewer(PipelineGraph* parent)
     : Gtk::DrawingArea()
+    , m_parent(parent)
 {
     set_vexpand(true);
     set_margin(10);
@@ -12,6 +14,12 @@ GraphViewer::GraphViewer()
     m_click_controller->signal_pressed().connect(sigc::mem_fun(*this, &GraphViewer::pressed), false);
     m_click_controller->set_button(0);
     add_controller(m_click_controller);
+
+    m_drag_controller = Gtk::GestureDrag::create();
+    m_drag_controller->signal_drag_begin().connect(sigc::mem_fun(*this, &GraphViewer::beginDrag), false);
+    m_drag_controller->signal_drag_update().connect(sigc::mem_fun(*this, &GraphViewer::updateDrag), false);
+    m_drag_controller->signal_drag_end().connect(sigc::mem_fun(*this, &GraphViewer::endDrag), false);
+    add_controller(m_drag_controller);
 
     m_motion_controller = Gtk::EventControllerMotion::create();
     m_motion_controller->signal_motion().connect(sigc::mem_fun(*this, &GraphViewer::moved), false);
@@ -25,11 +33,18 @@ void GraphViewer::addNode(Node* node)
     m_nodes.push_back(node);
     node->onUpdateCallback([this]{ queue_draw(); });
     node->onLinkCallback([this](bool a, Node* b, int c){ link(a, b, c); });
+
+    queue_draw();
 }
 
 void GraphViewer::removeNode(Node* node)
 {
 
+}
+
+OperationMode GraphViewer::getMode()
+{
+    return m_parent->getMode();
 }
 
 void GraphViewer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)
@@ -112,10 +127,45 @@ void GraphViewer::pressed(int n, double x, double y)
         m_constructing_link = nullptr;
     }
 }
+void GraphViewer::beginDrag(double x, double y)
+{
+    if(getMode() != OperationMode::MODE_MOVE)
+        return;
+
+    for(auto node : m_nodes){
+        if(node->contains(x, y)){
+            m_dragged_node = node;
+            break;
+        }
+    }
+
+    if(!m_dragged_node)
+        return; //TODO: Move viewport
+
+    m_dragged_node->select();
+}  
+void GraphViewer::updateDrag(double offset_x, double offset_y)
+{
+    if(!m_dragged_node)
+        return;
+
+    m_dragged_node->changePosition(offset_x, offset_y);
+}  
+void GraphViewer::endDrag(double offset_x, double offset_y)
+{
+    if(!m_dragged_node)
+        return;
+
+    m_dragged_node->setPosition();
+    m_dragged_node = nullptr;
+
+    queue_draw();
+}  
 
 void GraphViewer::moved(double x, double y)
 {
     Link::cursor_pos_x = x;
     Link::cursor_pos_y = y;
-    queue_draw();
+    if(m_constructing_link)
+        queue_draw();
 }

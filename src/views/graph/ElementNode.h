@@ -5,6 +5,6 @@
 
 class ElementNode : public Node {
     public:
-        ElementNode(const element_info* element, int x, int y);
+        ElementNode(GraphViewer* parent, const element_info* element, int x, int y);
         virtual void select() override;
 };

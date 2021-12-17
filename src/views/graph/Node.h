@@ -3,12 +3,16 @@
 #include <glibmm/ustring.h>
 #include <cairomm/cairomm.h>
 
+//Forward-declaration
+class GraphViewer;
+
 class Node {
     public:
-        Node(Glib::ustring name, int x, int y);
+        Node(GraphViewer* parent, Glib::ustring name, int x, int y);
         virtual ~Node() = default;
 
-        void setPosition(int new_x, int new_y);
+        void setPosition();
+        void changePosition(int offset_x, int offset_y);
 
         void onUpdateCallback(sigc::slot<void(void)> cb) { update_callback = cb; };
         void onLinkCallback(sigc::slot<void(bool, Node*, int)> cb) { link_callback = cb; };
@@ -42,9 +46,10 @@ class Node {
         inline void drawOutputs(const Cairo::RefPtr<Cairo::Context>& cr) const;
         inline void drawName(const Cairo::RefPtr<Cairo::Context>& cr) const;
 
-    private:
+        GraphViewer* m_parent;
+
         Glib::ustring m_name;
-        int m_x, m_y;
+        int m_x, m_y, m_offset_x = 0, m_offset_y = 0;
         int m_width = 160, m_height = 80;
         double m_height_by_width = 0.5;
 

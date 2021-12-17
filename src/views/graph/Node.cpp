@@ -3,16 +3,28 @@
 #define IO_VERTICAL_SIZE   0.1 
 #define IO_HORIZONTAL_SIZE 0.1 * m_height_by_width
 
-Node::Node(Glib::ustring name, int x, int y)
-    : m_name(name)
+Node::Node(GraphViewer* parent, Glib::ustring name, int x, int y)
+    : m_parent(parent)
+    , m_name(name)
     , m_x(x), m_y(y)
 {}
 
-void Node::setPosition(int new_x, int new_y)
+void Node::setPosition()
 {
-    m_x = new_x; 
-    m_y = new_y; 
+    m_offset_x = 0;
+    m_offset_y = 0;
+
     update_callback(); 
+}
+
+void Node::changePosition(int offset_x, int offset_y)
+{
+    m_x += offset_x - m_offset_x;
+    m_y += offset_y - m_offset_y;
+    m_offset_x = offset_x;
+    m_offset_y = offset_y;
+
+    update_callback();
 }
 
 void Node::onClick(double x, double y)
@@ -56,7 +68,9 @@ void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
     cr->restore();
 }
 
-void Node::select(){}
+void Node::select(){
+
+}
 
 bool Node::contains(double x, double y) const
 {
