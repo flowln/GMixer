@@ -111,6 +111,9 @@ void GraphViewer::link(bool is_input, Node* node, int index)
 
 void GraphViewer::pressed(int n, double x, double y)
 {
+    if(getMode() != OperationMode::MODE_SELECT)
+        return;
+
     auto button = m_click_controller->get_current_button();
 
     if(button == 1){ //Left click
@@ -125,6 +128,7 @@ void GraphViewer::pressed(int n, double x, double y)
         if(m_constructing_link)
             delete m_constructing_link;
         m_constructing_link = nullptr;
+        queue_draw();
     }
 }
 void GraphViewer::beginDrag(double x, double y)
