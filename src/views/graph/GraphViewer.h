@@ -11,6 +11,9 @@ class GraphViewer : public Gtk::DrawingArea {
     public:
         GraphViewer();
 
+        void addNode(Node* node);
+        void removeNode(Node* node);
+
         void draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height);
         void link(bool is_input, Node* node, int index);
 

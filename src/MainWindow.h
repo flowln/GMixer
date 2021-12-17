@@ -3,18 +3,19 @@
 #include <gtkmm/grid.h>
 #include <gtkmm/window.h>
 
-#include "views/ElementSelector.h"
-#include "views/PipelineEditor.h"
-#include "views/PipelineSelector.h"
+//Forward-declarations
+class ElementSelector;
+class PipelineEditor;
+class PipelineSelector;
 
 class MainWindow : public Gtk::Window {
     public:
         MainWindow();
-        virtual ~MainWindow();
+        ~MainWindow();
+
+        void attachEditor(PipelineEditor& editor);
+
     private: 
         Gtk::Grid m_main_container;
-
-        ElementSelector* m_element_selector;
-        PipelineEditor* m_pipeline_editor;
-        PipelineSelector* m_pipeline_selector;
+        std::vector<PipelineEditor*> m_editors;
 }; 

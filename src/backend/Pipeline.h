@@ -1,5 +1,7 @@
 #pragma once
 
+#include "backend/ElementUtils.h"
+
 #include <gst/gst.h>
 #include <glibmm/object.h>
 #include <glibmm/ustring.h>
@@ -15,6 +17,9 @@ class Pipeline : public Glib::Object {
         static gboolean handleErrorMessage(GstBus*, GstMessage*, gpointer);
         static gboolean handleWarningMessage(GstBus*, GstMessage*, gpointer);
         static gboolean handleInfoMessage(GstBus*, GstMessage*, gpointer);
+
+        void createElement(const gchar* name);
+        sigc::signal<void(const element_info*)> signal_created_element;
 
         Glib::ustring getName() const{ return m_name; }
         Glib::ustring* getNameReference() { return &m_name; }

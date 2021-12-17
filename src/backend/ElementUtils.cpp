@@ -73,3 +73,11 @@ const element_info* ElementUtils::getElementInfo(const Glib::ustring& name)
 
     return res;
 }
+
+const element_info* ElementUtils::getElementInfo(const GstElement& element)
+{
+    auto res = new element_info();
+    res->name = gst_element_get_name(&element);
+    //TODO
+    return res;
+}

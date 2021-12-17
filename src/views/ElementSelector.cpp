@@ -1,10 +1,14 @@
 #include "backend/ElementListModel.h"
 #include "backend/ElementUtils.h"
 #include "views/ElementSelector.h"
+#include "views/PipelineSelector.h"
 
 #include <gtkmm/paned.h>
 
 #include <thread>
+
+ElementSelector* ElementSelector::s_instance = nullptr;
+sigc::signal<void(Glib::ustring)> ElementSelector::signal_add_element = {};
 
 ElementList::ElementList(const ElementType& type)
     : Gtk::ScrolledWindow()
@@ -52,17 +56,36 @@ SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
     m_pads_info.appendMany(&m_src_num, &m_src_caps, &m_sink_num, &m_sink_caps);
     m_selected_info_box->append(m_pads_info);
 
+    auto add_button = Gtk::make_managed<Gtk::Button>("Add");
+    add_button->set_sensitive(false);
+    PipelineSelector::signal_pipeline_selected.connect(
+        [add_button](Pipeline* selected){
+            add_button->set_sensitive(selected != nullptr);
+        });
+    add_button->signal_clicked().connect(
+        [this]{
+            ElementSelector::signal_add_element.emit(getSelectedElementName());
+        });
+    m_selected_info_box->append(*add_button);
+
     add(*m_selected_info_box, "selected");
     add(m_not_selected, "not_selected");
 
     set_visible_child("not_selected");
 }
+Glib::ustring SelectedInfoPanel::getSelectedPluginName() const
+{
+    return m_list->getSelection().get_selected()->get_value(m_list->getModelRecord().m_plugin);
+}
+
+Glib::ustring SelectedInfoPanel::getSelectedElementName() const
+{
+    return m_list->getSelection().get_selected()->get_value(m_list->getModelRecord().m_element_name);
+}
 
 void SelectedInfoPanel::selectionChanged()
 {
-    auto curr_selection = m_list->getSelection().get_selected();
-
-    auto plugin_name = curr_selection->get_value(m_list->getModelRecord().m_plugin);
+    auto plugin_name = getSelectedPluginName();
     auto plugin_info = ElementUtils::getPluginInfo(plugin_name);
 
     m_plugin_name.set_text        (Glib::ustring::sprintf("\tName: %s", plugin_name));
@@ -70,7 +93,7 @@ void SelectedInfoPanel::selectionChanged()
     m_plugin_version.set_text     (Glib::ustring::sprintf("\tVersion: %s", plugin_info->version));
     m_plugin_license.set_text     (Glib::ustring::sprintf("\tLicense: %s", plugin_info->license));
 
-    auto element_name = curr_selection->get_value(m_list->getModelRecord().m_element_name);
+    auto element_name = getSelectedElementName();
     auto element_info = ElementUtils::getElementInfo(element_name);
 
     m_name.set_text         (Glib::ustring::sprintf("\tName: %s", element_name));
@@ -102,6 +125,15 @@ void SelectedInfoPanel::selectionChanged()
     }
 
     set_visible_child("selected");
+}
+
+ElementSelector* ElementSelector::create(MainWindow* main_window)
+{
+    if(s_instance)
+        return s_instance;
+
+    s_instance = new ElementSelector(main_window);
+    return s_instance;
 }
 
 ElementSelector::ElementSelector(Gtk::Window* main_window)
@@ -180,4 +212,17 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
 
     source_list->getModel().populate();
     source_page->set_position(source_page->get_width()/2);
+}
+
+Glib::ustring ElementSelector::getSelectedElement()
+{
+    if(!s_instance)
+        return {};
+
+    auto& note = s_instance->m_notebook;
+    auto curr_page = dynamic_cast<Gtk::Paned*>(note.get_nth_page(note.get_current_page()));
+    if(!curr_page)
+        return {};
+
+    return dynamic_cast<SelectedInfoPanel*>(curr_page->get_end_child())->getSelectedElementName();
 }

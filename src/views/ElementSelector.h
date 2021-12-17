@@ -3,6 +3,8 @@
  * */
 #pragma once
 
+#include "MainWindow.h"
+
 #include <gtkmm/box.h>
 #include <gtkmm/listbox.h>
 #include <gtkmm/expander.h>
@@ -58,6 +60,9 @@ class SelectedInfoPanel : public Gtk::Stack{
     public:
         SelectedInfoPanel(ElementList*);
 
+        Glib::ustring getSelectedPluginName() const;
+        Glib::ustring getSelectedElementName() const;
+
         void selectionChanged();
         void deselect();
     private:
@@ -79,10 +84,21 @@ class SelectedInfoPanel : public Gtk::Stack{
 
 class ElementSelector {
     public:
-        ElementSelector(Gtk::Window* m_main_window);
+        static ElementSelector* create(MainWindow* main_window);
+        static ElementSelector* getInstance() { return s_instance; };
+
+        static Glib::ustring getSelectedElement();
+
+        static sigc::signal<void(Glib::ustring)> signal_add_element;
 
         Gtk::Widget& the() { return m_notebook; };
+
+    protected:
+        ElementSelector(Gtk::Window* m_main_window);
+
     private: 
+        static ElementSelector* s_instance;
+
         Gtk::Window* m_main_window;
         Gtk::Notebook m_notebook;
 };

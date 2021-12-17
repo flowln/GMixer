@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glibmm/ustring.h>
-#include <glibmm/object.h>
+#include <gst/gst.h>
 #include <list>
 
 struct plugin_info{
@@ -16,6 +16,7 @@ struct pad_info{
 };
 
 struct element_info{
+    const gchar* name;
     const gchar* description;
     const gchar* author;
 
@@ -30,4 +31,5 @@ class ElementUtils{
     public:
         static const plugin_info* getPluginInfo(const Glib::ustring&);
         static const element_info* getElementInfo(const Glib::ustring&);
+        static const element_info* getElementInfo(const GstElement&);
 };

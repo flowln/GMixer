@@ -18,13 +18,18 @@ GraphViewer::GraphViewer()
     add_controller(m_motion_controller);
 
     set_draw_func(sigc::mem_fun(*this, &GraphViewer::draw));
-    m_nodes.push_back(new Node("one", 0, 0));
-    m_nodes.push_back(new Node("two", 500, 0));
-    m_nodes.push_back(new Node("three", 500, 200));
-    for(auto node : m_nodes){
-        node->onUpdateCallback([this]{ queue_draw(); });
-        node->onLinkCallback([this](bool a, Node* b, int c){ link(a, b, c); });
-    }
+}
+
+void GraphViewer::addNode(Node* node)
+{
+    m_nodes.push_back(node);
+    node->onUpdateCallback([this]{ queue_draw(); });
+    node->onLinkCallback([this](bool a, Node* b, int c){ link(a, b, c); });
+}
+
+void GraphViewer::removeNode(Node* node)
+{
+
 }
 
 void GraphViewer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)

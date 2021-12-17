@@ -95,3 +95,13 @@ gboolean Pipeline::handleInfoMessage(GstBus* bus, GstMessage* msg, gpointer data
 {
     return TRUE;
 }
+
+void Pipeline::createElement(const gchar* name)
+{
+    auto factory = gst_element_factory_find(name);
+    auto element = gst_element_factory_create(factory, name);
+    
+    if(gst_bin_add(GST_BIN ( m_pipeline ), element))
+        signal_created_element.emit(ElementUtils::getElementInfo(*element));
+}
+

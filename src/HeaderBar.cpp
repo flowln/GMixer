@@ -43,5 +43,10 @@ HeaderBar::HeaderBar()
     m_bar->pack_start(*m_add_button);
     m_bar->pack_start(*m_import_button);
     m_bar->pack_start(*m_save_button);
+
+    PipelineSelector::signal_pipeline_selected.connect(
+        [this](Pipeline* selected){
+            setTitleText(selected->getName());
+        });
 }
 

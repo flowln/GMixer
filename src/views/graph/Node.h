@@ -15,7 +15,7 @@ class Node {
         void onClick(double x, double y);
 
         void draw(const Cairo::RefPtr<Cairo::Context>& cr) const;
-        //virtual void select();
+        virtual void select();
 
         int getX() const { return m_x; }
         int getY() const { return m_y; }

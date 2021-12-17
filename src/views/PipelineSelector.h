@@ -3,31 +3,35 @@
  * */
 #pragma once
 
+#include "MainWindow.h"
 #include "backend/Pipeline.h"
 #include "backend/PipelineListModel.h"
 
 #include <glibmm/refptr.h>
 
-#include <gtkmm/window.h>
-
 #include <gtkmm/treeview.h>
 
 class PipelineSelector{
     public:
-        static PipelineSelector* create(Gtk::Window* main_window);
+        static PipelineSelector* create(MainWindow* main_window);
         static PipelineSelector* getInstance() { return s_instance; };
-        static Gtk::TreeModel::Path currentPath();
 
-        Gtk::Widget* the() { return m_list; };
+        static Gtk::TreeModel::Path currentPath();
+        static Pipeline* currentPipeline();
+
+        static sigc::signal<void(Pipeline*)> signal_pipeline_selected;
+
+        Gtk::Widget& the() { return m_list; };
+
 
     protected:
-        PipelineSelector(Gtk::Window* main_window);
+        PipelineSelector(MainWindow* main_window);
 
     private:
         static PipelineSelector* s_instance;
 
-        Glib::RefPtr<PipelineListModel> m_model;
+        MainWindow* m_main_window;
 
-        Gtk::Window* m_main_window;
-        Gtk::TreeView* m_list;
+        Glib::RefPtr<PipelineListModel> m_model;
+        Gtk::TreeView m_list;
 };

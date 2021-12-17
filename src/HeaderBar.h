@@ -8,7 +8,7 @@ class HeaderBar {
     public:
         static Gtk::HeaderBar* create();
 
-        static void setTitleText(const Glib::ustring text);
+        void setTitleText(const Glib::ustring text);
 
     protected:
         HeaderBar();

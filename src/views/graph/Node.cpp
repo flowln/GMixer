@@ -19,7 +19,7 @@ void Node::onClick(double x, double y)
 {
     auto n = numberOfIOPad(x, y);
     if(n < 0){
-        //select();
+        select();
         return;
     }
 
@@ -55,6 +55,8 @@ void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
 
     cr->restore();
 }
+
+void Node::select(){}
 
 bool Node::contains(double x, double y) const
 {
