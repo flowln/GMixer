@@ -105,3 +105,12 @@ void Pipeline::createElement(const gchar* name)
         signal_created_element.emit(ElementUtils::getElementInfo(*element));
 }
 
+std::unique_ptr<GstIterator, GstIteratorFreeFunction> Pipeline::getElementsSorted()
+{
+    return std::unique_ptr<GstIterator, GstIteratorFreeFunction>(gst_bin_iterate_sorted(GST_BIN( m_pipeline )), gst_iterator_free);
+}
+
+bool Pipeline::isEmpty() const
+{
+    return GST_BIN_NUMCHILDREN( m_pipeline ) == 0;
+}

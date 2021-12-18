@@ -28,6 +28,16 @@ GraphViewer::GraphViewer(PipelineGraph* parent)
     set_draw_func(sigc::mem_fun(*this, &GraphViewer::draw));
 }
 
+Node* GraphViewer::searchNodeWithName(Glib::ustring name)
+{
+    for(auto node : m_nodes){
+        if(node->getName() == name)
+            return node;
+    }
+
+    return nullptr;
+}
+
 void GraphViewer::addNode(Node* node)
 {
     m_nodes.push_back(node);

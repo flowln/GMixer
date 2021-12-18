@@ -16,6 +16,7 @@ class GraphViewer : public Gtk::DrawingArea {
     public:
         GraphViewer(PipelineGraph* parent);
 
+        Node* searchNodeWithName(Glib::ustring name);
         void addNode(Node* node);
         void removeNode(Node* node);
 

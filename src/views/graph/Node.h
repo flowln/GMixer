@@ -14,6 +14,9 @@ class Node {
         void setPosition();
         void changePosition(int offset_x, int offset_y);
 
+        void setNumInputs(int n) { m_inputs = n; update_callback(); }
+        void setNumOutputs(int n) {m_outputs = n; update_callback(); }
+
         void onUpdateCallback(sigc::slot<void(void)> cb) { update_callback = cb; };
         void onLinkCallback(sigc::slot<void(bool, Node*, int)> cb) { link_callback = cb; };
         void onClick(double x, double y);
@@ -22,6 +25,7 @@ class Node {
         virtual void select() { m_is_selected = true; }
         virtual void deselect() { m_is_selected = false; }
 
+        Glib::UStringView getName() const{ return m_name; }
         int getX() const { return m_x; }
         int getY() const { return m_y; }
         bool isSelected() const { return m_is_selected; }

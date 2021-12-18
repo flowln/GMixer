@@ -20,11 +20,15 @@ class Pipeline : public Glib::Object {
         static gboolean handleInfoMessage(GstBus*, GstMessage*, gpointer);
 
         void createElement(const gchar* name);
+        std::unique_ptr<GstIterator, GstIteratorFreeFunction> getElementsSorted();
         sigc::signal<void(const element_info*)> signal_created_element;
 
         Glib::ustring getName() const{ return m_name; }
         Glib::ustring* getNameReference() { return &m_name; }
         const gchar* getCommand() const;
+
+        bool isEmpty() const;
+
     private:
         Glib::ustring m_name = { "" };
         GstPipeline* m_pipeline;

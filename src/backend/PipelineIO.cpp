@@ -1,4 +1,5 @@
 #include "backend/FileUtils.h"
+#include "backend/Pipeline.h"
 #include "backend/PipelineIO.h"
 #include "backend/PipelineListModel.h"
 #include "views/PipelineSelector.h"
@@ -9,6 +10,8 @@
 #include <gtkmm/label.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/boxlayout.h>
+
+//TODO: Move Gtk stuff out of backend/
 
 Gtk::Window* PipelineFactory::s_main_window = nullptr;
 

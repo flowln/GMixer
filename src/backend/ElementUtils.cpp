@@ -1,5 +1,4 @@
 #include "ElementUtils.h"
-#include <gst/gst.h>
 
 const plugin_info* ElementUtils::getPluginInfo(const Glib::ustring& name)
 {
@@ -18,7 +17,7 @@ const plugin_info* ElementUtils::getPluginInfo(const Glib::ustring& name)
     return res;
 }
 
-const element_info* ElementUtils::getElementInfo(const Glib::ustring& name)
+element_info* ElementUtils::getElementInfo(const Glib::ustring& name)
 {
     auto factory = gst_element_factory_find(name.c_str());
 
@@ -76,8 +75,10 @@ const element_info* ElementUtils::getElementInfo(const Glib::ustring& name)
 
 const element_info* ElementUtils::getElementInfo(const GstElement& element)
 {
-    auto res = new element_info();
-    res->name = gst_element_get_name(&element);
-    //TODO
+    auto name = gst_element_get_name(&element);
+    auto res = getElementInfo(name);
+    res->name = name;
+    
     return res;
 }
+

@@ -1,4 +1,5 @@
 sources += files([
+  'Element.cpp',
   'ElementListModel.cpp',
   'ElementUtils.cpp',
   'FileUtils.cpp',

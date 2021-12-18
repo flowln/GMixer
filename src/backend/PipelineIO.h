@@ -1,9 +1,9 @@
 #pragma once
 
-#include "backend/Pipeline.h"
-
 #include <gtkmm/window.h>
 
+// Forward-declaration
+class Pipeline;
 
 class PipelineFactory{
     public:

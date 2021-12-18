@@ -3,6 +3,7 @@
 #include <glibmm/ustring.h>
 #include <gst/gst.h>
 #include <list>
+#include <memory>
 
 struct plugin_info{
     const gchar* description;
@@ -30,6 +31,9 @@ struct element_info{
 class ElementUtils{
     public:
         static const plugin_info* getPluginInfo(const Glib::ustring&);
-        static const element_info* getElementInfo(const Glib::ustring&);
+        static element_info* getElementInfo(const Glib::ustring&);
         static const element_info* getElementInfo(const GstElement&);
+
+    private:
+    
 };
