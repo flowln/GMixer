@@ -1,10 +1,11 @@
 #pragma once
 
-#include "backend/ElementUtils.h"
-
 #include <gst/gst.h>
 #include <glibmm/object.h>
 #include <glibmm/ustring.h>
+
+// Forward-declaration
+struct element_info;
 
 class Pipeline : public Glib::Object {
     public:

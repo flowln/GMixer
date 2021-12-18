@@ -3,13 +3,14 @@
  * */
 #pragma once
 
-#include "MainWindow.h"
-#include "backend/Pipeline.h"
-#include "backend/PipelineListModel.h"
-
 #include <glibmm/refptr.h>
 
 #include <gtkmm/treeview.h>
+
+// Forward-declaration
+class MainWindow;
+class Pipeline;
+class PipelineListModel;
 
 class PipelineSelector{
     public:

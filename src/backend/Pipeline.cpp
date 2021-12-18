@@ -1,5 +1,5 @@
+#include "backend/ElementUtils.h"
 #include "backend/Pipeline.h"
-#include "gst/gstutils.h"
 
 Pipeline::Pipeline(Glib::ustring name)
     : m_name(name)

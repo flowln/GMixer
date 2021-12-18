@@ -1,5 +1,7 @@
+#include "backend/ElementUtils.h"
 #include "views/PipelineEditor.h"
 #include "views/graph/ElementNode.h"
+#include "views/graph/GraphViewer.h"
 
 ElementNode::ElementNode(GraphViewer* parent, const element_info* element, int x, int y)
     : Node(parent, element->name, x, y)

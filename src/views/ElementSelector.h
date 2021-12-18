@@ -3,8 +3,6 @@
  * */
 #pragma once
 
-#include "MainWindow.h"
-
 #include <gtkmm/box.h>
 #include <gtkmm/listbox.h>
 #include <gtkmm/expander.h>
@@ -18,6 +16,7 @@
 class ElementListModel;
 class ElementRecord;
 enum class ElementType;
+class MainWindow;
 
 class ElementList : public Gtk::ScrolledWindow{
     public:

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "backend/ElementUtils.h"
 #include "views/graph/Node.h"
+
+//Forward-declaration
+struct element_info;
 
 class ElementNode : public Node {
     public:
