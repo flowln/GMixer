@@ -19,10 +19,12 @@ class Node {
         void onClick(double x, double y);
 
         void draw(const Cairo::RefPtr<Cairo::Context>& cr) const;
-        virtual void select();
+        virtual void select() { m_is_selected = true; }
+        virtual void deselect() { m_is_selected = false; }
 
         int getX() const { return m_x; }
         int getY() const { return m_y; }
+        bool isSelected() const { return m_is_selected; }
 
         bool contains(double x, double y) const;
 
@@ -52,6 +54,8 @@ class Node {
         int m_x, m_y, m_offset_x = 0, m_offset_y = 0;
         int m_width = 160, m_height = 80;
         double m_height_by_width = 0.5;
+
+        bool m_is_selected = false;
 
         int m_inputs = 2, m_outputs = 1;
 

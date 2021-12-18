@@ -9,11 +9,26 @@ ElementNode::ElementNode(GraphViewer* parent, const element_info* element, int x
 
 void ElementNode::select()
 {
+    Node::select();
+
     switch(m_parent->getMode()){
     case(OperationMode::MODE_SELECT):
+        //TODO: Open property tab on the side
         break;
     case(OperationMode::MODE_MOVE):
-        Node::select();
+        break;
+    }
+}
+
+void ElementNode::deselect()
+{
+    Node::deselect();
+
+    switch(m_parent->getMode()){
+    case(OperationMode::MODE_SELECT):
+        //TODO: Close property tab on the side
+        break;
+    case(OperationMode::MODE_MOVE):
         break;
     }
 }

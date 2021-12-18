@@ -117,19 +117,36 @@ void GraphViewer::pressed(int n, double x, double y)
     auto button = m_click_controller->get_current_button();
 
     if(button == 1){ //Left click
+        bool just_selected = false;
         for(auto node : m_nodes){
             if(node->contains(x, y)){
                 node->onClick(x, y);
+                if(node->isSelected()){
+                    if(m_selected_node && m_selected_node != node)
+                        m_selected_node->deselect();
+                    m_selected_node = node;
+                    just_selected = true;
+                }
                 break;
             }
+        }
+        if(!just_selected && m_selected_node){
+            m_selected_node->deselect();
+            m_selected_node = nullptr;
         }
     }
     else if(button == 3){ // Right click
         if(m_constructing_link)
             delete m_constructing_link;
         m_constructing_link = nullptr;
-        queue_draw();
+
+        if(m_selected_node){
+            m_selected_node->deselect();
+            m_selected_node = nullptr;
+        }
     }
+
+    queue_draw();
 }
 void GraphViewer::beginDrag(double x, double y)
 {
@@ -138,32 +155,33 @@ void GraphViewer::beginDrag(double x, double y)
 
     for(auto node : m_nodes){
         if(node->contains(x, y)){
-            m_dragged_node = node;
+            if(m_selected_node)
+                m_selected_node->deselect();
+            m_selected_node = node;
             break;
         }
     }
 
-    if(!m_dragged_node)
+    if(!m_selected_node)
         return; //TODO: Move viewport
 
-    m_dragged_node->select();
+    m_selected_node->select();
+    m_is_dragging = true;
 }  
 void GraphViewer::updateDrag(double offset_x, double offset_y)
 {
-    if(!m_dragged_node)
+    if(!m_is_dragging)
         return;
 
-    m_dragged_node->changePosition(offset_x, offset_y);
+    m_selected_node->changePosition(offset_x, offset_y);
 }  
 void GraphViewer::endDrag(double offset_x, double offset_y)
 {
-    if(!m_dragged_node)
+    if(!m_is_dragging)
         return;
 
-    m_dragged_node->setPosition();
-    m_dragged_node = nullptr;
-
-    queue_draw();
+    m_selected_node->setPosition();
+    m_is_dragging = false;
 }  
 
 void GraphViewer::moved(double x, double y)

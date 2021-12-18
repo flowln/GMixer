@@ -38,13 +38,12 @@ void Node::onClick(double x, double y)
     bool is_input = n < m_inputs;
     int index = is_input ? n : n - m_inputs;
     link_callback(is_input, this, index);
-    update_callback();
 }
 
 void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
 {
-    cr->save();
-    cr->save();
+    cr->save(); // Pre-draw
+    cr->save(); // Pre-scale
 
     cr->translate(m_x, m_y);
     cr->scale(m_width, m_height);
@@ -61,15 +60,25 @@ void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
 
     cr->fill();
 
-    cr->restore();
+    cr->restore(); // Pre-scale
+    
+    cr->save();    // Pre-border
+    if(m_is_selected){
+        cr->set_source_rgb(0.1, 0.1, 0.5);
+        cr->set_line_width(4);
+        cr->rectangle(m_x, m_y, m_width, m_height);
+        cr->stroke();
+    }
+    else{
+        cr->set_source_rgb(0, 0, 0);
+        cr->rectangle(m_x, m_y, m_width, m_height);
+        cr->stroke();
+    }
+    cr->restore(); // Pre-border
 
     drawName(cr);
 
-    cr->restore();
-}
-
-void Node::select(){
-
+    cr->restore(); // Pre-draw
 }
 
 bool Node::contains(double x, double y) const

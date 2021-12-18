@@ -41,5 +41,7 @@ class GraphViewer : public Gtk::DrawingArea {
         std::vector<Link*>  m_links; 
         
         Link* m_constructing_link = nullptr;
-        Node* m_dragged_node = nullptr;
+        Node* m_selected_node = nullptr;
+
+        bool m_is_dragging = false;
 };
