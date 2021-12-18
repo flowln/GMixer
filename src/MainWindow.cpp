@@ -5,6 +5,7 @@
 #include "views/ElementSelector.h"
 #include "views/PipelineEditor.h"
 #include "views/PipelineSelector.h"
+#include "signals/Pipelines.h"
 
 MainWindow::MainWindow()
     : m_main_container()
@@ -19,7 +20,7 @@ MainWindow::MainWindow()
     auto element_selector = ElementSelector::create(this);
     auto pipeline_selector = PipelineSelector::create(this); 
 
-    PipelineSelector::signal_pipeline_selected.connect(
+    Signals::pipeline_selected().connect(
         [this](Pipeline* selected){
             for(auto editor : m_editors){
                 if(editor->getPipeline() == selected){

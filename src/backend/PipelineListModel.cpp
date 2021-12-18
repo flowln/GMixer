@@ -1,4 +1,5 @@
 #include "PipelineListModel.h"
+#include "signals/Pipelines.h"
 
 PipelineListModel* PipelineListModel::s_instance = nullptr;
 
@@ -42,4 +43,6 @@ void PipelineListModel::addPipeline(Glib::RefPtr<Pipeline> pipeline)
 
     (*iter)[records.m_pipeline_name] = *pipeline->getNameReference();
     (*iter)[records.m_pipeline] = pipeline; 
+
+    Signals::pipeline_added().emit(s_instance->getModel()->get_path(iter));
 }

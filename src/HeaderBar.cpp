@@ -3,7 +3,7 @@
 #include "backend/FileUtils.h"
 #include "backend/PipelineIO.h"
 #include "backend/PipelineListModel.h"
-#include "views/PipelineSelector.h"
+#include "signals/Pipelines.h"
 
 #include <sigc++/functors/ptr_fun.h>
 
@@ -44,7 +44,7 @@ HeaderBar::HeaderBar()
     m_bar->pack_start(*m_import_button);
     m_bar->pack_start(*m_save_button);
 
-    PipelineSelector::signal_pipeline_selected.connect(
+    Signals::pipeline_selected().connect(
         [this](Pipeline* selected){
             setTitleText(selected->getName());
         });

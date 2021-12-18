@@ -1,14 +1,17 @@
 #include "backend/ElementListModel.h"
 #include "backend/ElementUtils.h"
+
+#include "signals/Pipelines.h"
+#include "signals/Elements.h"
+
 #include "views/ElementSelector.h"
 #include "views/PipelineSelector.h"
 
+#include "MainWindow.h"
+
 #include <gtkmm/paned.h>
 
-#include <thread>
-
 ElementSelector* ElementSelector::s_instance = nullptr;
-sigc::signal<void(Glib::ustring)> ElementSelector::signal_add_element = {};
 
 ElementList::ElementList(const ElementType& type)
     : Gtk::ScrolledWindow()
@@ -58,13 +61,13 @@ SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
 
     auto add_button = Gtk::make_managed<Gtk::Button>("Add");
     add_button->set_sensitive(false);
-    PipelineSelector::signal_pipeline_selected.connect(
+    Signals::pipeline_selected().connect(
         [add_button](Pipeline* selected){
             add_button->set_sensitive(selected != nullptr);
         });
     add_button->signal_clicked().connect(
         [this]{
-            ElementSelector::signal_add_element.emit(getSelectedElementName());
+            Signals::element_add().emit(getSelectedElementName());
         });
     m_selected_info_box->append(*add_button);
 

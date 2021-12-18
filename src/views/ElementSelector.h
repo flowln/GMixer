@@ -89,8 +89,6 @@ class ElementSelector {
 
         static Glib::ustring getSelectedElement();
 
-        static sigc::signal<void(Glib::ustring)> signal_add_element;
-
         Gtk::Widget& the() { return m_notebook; };
 
     protected:

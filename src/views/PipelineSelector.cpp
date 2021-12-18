@@ -1,10 +1,16 @@
+#include "backend/Pipeline.h"
 #include "backend/PipelineIO.h"
+#include "backend/PipelineListModel.h"
+
+#include "signals/Pipelines.h"
+
 #include "views/PipelineEditor.h"
 #include "views/PipelineSelector.h"
+
 #include "HeaderBar.h"
+#include "MainWindow.h"
 
 PipelineSelector* PipelineSelector::s_instance = nullptr;
-sigc::signal<void(Pipeline*)> PipelineSelector::signal_pipeline_selected = {};
 
 PipelineSelector* PipelineSelector::create(MainWindow* main_window)
 {
@@ -36,17 +42,25 @@ PipelineSelector::PipelineSelector(MainWindow* main_window)
     PipelineListModel::create();
     
     m_list.set_model(m_model->getModel());
-    m_list.append_column("", m_model->getRecord().m_pipeline_name);
+    //FIXME: Add CSS to center column header
+    m_list.append_column("Pipelines", m_model->getRecord().m_pipeline_name);
 
     m_list.get_column(0)->set_fixed_width(m_list.get_width());
-    m_list.set_headers_visible(false);
-    m_list.set_reorderable(true);
+    m_list.set_headers_visible(true);
     m_list.set_activate_on_single_click(true);
 
     auto renderer = dynamic_cast<Gtk::CellRendererText*>(m_list.get_column_cell_renderer(0));
     renderer->property_ellipsize().set_value(Pango::EllipsizeMode::END);
     renderer->set_alignment(0.5, 0);
 
-    m_list.signal_row_activated().connect([](const Gtk::TreePath& path, Gtk::TreeViewColumn* const& column){ signal_pipeline_selected.emit(currentPipeline()); });
+    m_list.signal_row_activated().connect(
+        [](const Gtk::TreePath& path, Gtk::TreeViewColumn* const& column){ 
+            Signals::pipeline_selected().emit(currentPipeline()); 
+        });
+    Signals::pipeline_added().connect(
+        [this](const Gtk::TreePath& path){
+            m_list.get_selection()->select(path);
+            Signals::pipeline_selected().emit(currentPipeline()); 
+        });
 }
 

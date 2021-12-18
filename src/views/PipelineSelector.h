@@ -19,10 +19,7 @@ class PipelineSelector{
         static Gtk::TreeModel::Path currentPath();
         static Pipeline* currentPipeline();
 
-        static sigc::signal<void(Pipeline*)> signal_pipeline_selected;
-
         Gtk::Widget& the() { return m_list; };
-
 
     protected:
         PipelineSelector(MainWindow* main_window);

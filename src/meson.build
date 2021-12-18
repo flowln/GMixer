@@ -5,6 +5,7 @@ sources += files([
   'HeaderBar.cpp'
 ])
 
+subdir('signals')
 subdir('views')
 subdir('backend')
 
