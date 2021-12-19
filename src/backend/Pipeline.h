@@ -5,7 +5,7 @@
 #include <glibmm/ustring.h>
 
 // Forward-declaration
-struct element_info;
+class Element;
 
 class Pipeline : public Glib::Object {
     public:
@@ -21,7 +21,7 @@ class Pipeline : public Glib::Object {
 
         void createElement(const gchar* name);
         std::unique_ptr<GstIterator, GstIteratorFreeFunction> getElementsSorted();
-        sigc::signal<void(const element_info*)> signal_created_element;
+        sigc::signal<void(Element*)> signal_element_added;
 
         Glib::ustring getName() const{ return m_name; }
         Glib::ustring* getNameReference() { return &m_name; }

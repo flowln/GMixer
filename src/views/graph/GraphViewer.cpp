@@ -1,7 +1,13 @@
+#include "backend/Element.h"
 #include "views/PipelineEditor.h"
 #include "views/graph/GraphViewer.h"
+#include "views/graph/Node.h"
+#include "views/graph/ElementNode.h"
+#include "views/graph/Pad.h"
 
 #include <cairomm/cairomm.h>
+
+double GraphViewer::cursor_pos_x = 0, GraphViewer::cursor_pos_y = 0;
 
 GraphViewer::GraphViewer(PipelineGraph* parent)
     : Gtk::DrawingArea()
@@ -28,6 +34,16 @@ GraphViewer::GraphViewer(PipelineGraph* parent)
     set_draw_func(sigc::mem_fun(*this, &GraphViewer::draw));
 }
 
+ElementNode* GraphViewer::searchForElement(GstElement* elem)
+{
+    for(auto node : m_nodes){
+        auto elem_node = dynamic_cast<ElementNode*>(node);
+        if(elem_node && *elem_node->getElement() == elem) {
+            return elem_node;
+    }}
+    return nullptr;
+}
+
 Node* GraphViewer::searchNodeWithName(Glib::ustring name)
 {
     for(auto node : m_nodes){
@@ -42,7 +58,6 @@ void GraphViewer::addNode(Node* node)
 {
     m_nodes.push_back(node);
     node->onUpdateCallback([this]{ queue_draw(); });
-    node->onLinkCallback([this](bool a, Node* b, int c){ link(a, b, c); });
 
     queue_draw();
 }
@@ -70,53 +85,8 @@ void GraphViewer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int h
     for(auto node : m_nodes){
         node->draw(cr);
     }
-    for(auto link : m_links){
-        link->draw(cr);
-    }
-    if(m_constructing_link)
-        m_constructing_link->draw(cr);
 
     cr->fill();
-}
-
-void GraphViewer::link(bool is_input, Node* node, int index)
-{
-    if(is_input){
-        if(m_constructing_link && !m_constructing_link->input_node){
-            m_constructing_link->input_node = node;
-            m_constructing_link->index_input_pad = index;
-            m_links.push_back(m_constructing_link);
-
-            // TODO: Tell Gst to make the connection
-
-            m_constructing_link = nullptr;
-            return;
-        }
-
-        if(m_constructing_link){
-            // Discart old incomplete link
-            delete m_constructing_link;
-        }
-        m_constructing_link = new Link(node, index, nullptr, -1);
-    }
-    else{
-        if(m_constructing_link && !m_constructing_link->output_node){
-            m_constructing_link->output_node = node;
-            m_constructing_link->index_output_pad = index;
-            m_links.push_back(m_constructing_link);
-
-            // TODO: Tell Gst to make the connection
-            
-            m_constructing_link = nullptr;
-            return;
-        }
-
-        if(m_constructing_link){
-            // Discart old incomplete link
-            delete m_constructing_link;
-        }
-        m_constructing_link = new Link(nullptr, -1, node, index);
-    }
 }
 
 void GraphViewer::pressed(int n, double x, double y)
@@ -131,12 +101,17 @@ void GraphViewer::pressed(int n, double x, double y)
         for(auto node : m_nodes){
             if(node->contains(x, y)){
                 node->onClick(x, y);
-                if(node->isSelected()){
-                    if(m_selected_node && m_selected_node != node)
-                        m_selected_node->deselect();
-                    m_selected_node = node;
-                    just_selected = true;
+                if(m_selected_node && m_selected_node != node){
+                    if(m_selected_node->selectedPad()){
+                        node->selectedPad()->link(m_selected_node->selectedPad());
+                        node->deselect();
+                    }
+
+                    m_selected_node->deselect();
                 }
+                m_selected_node = node;
+                just_selected = true;
+
                 break;
             }
         }
@@ -146,9 +121,6 @@ void GraphViewer::pressed(int n, double x, double y)
         }
     }
     else if(button == 3){ // Right click
-        if(m_constructing_link)
-            delete m_constructing_link;
-        m_constructing_link = nullptr;
 
         if(m_selected_node){
             m_selected_node->deselect();
@@ -176,6 +148,8 @@ void GraphViewer::beginDrag(double x, double y)
         return; //TODO: Move viewport
 
     m_selected_node->select();
+    m_selected_start_x = m_selected_node->getX();
+    m_selected_start_y = m_selected_node->getY();
     m_is_dragging = true;
 }  
 void GraphViewer::updateDrag(double offset_x, double offset_y)
@@ -183,21 +157,19 @@ void GraphViewer::updateDrag(double offset_x, double offset_y)
     if(!m_is_dragging)
         return;
 
-    m_selected_node->changePosition(offset_x, offset_y);
+    m_selected_node->setPosition(m_selected_start_x + offset_x, m_selected_start_y + offset_y);
 }  
 void GraphViewer::endDrag(double offset_x, double offset_y)
 {
     if(!m_is_dragging)
         return;
 
-    m_selected_node->setPosition();
     m_is_dragging = false;
 }  
 
 void GraphViewer::moved(double x, double y)
 {
-    Link::cursor_pos_x = x;
-    Link::cursor_pos_y = y;
-    if(m_constructing_link)
-        queue_draw();
+    cursor_pos_x = x;
+    cursor_pos_y = y;
+    queue_draw();
 }

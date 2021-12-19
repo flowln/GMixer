@@ -1,22 +1,17 @@
+#include "backend/Element.h"
 #include "backend/ElementUtils.h"
 #include "backend/Pipeline.h"
 
 Pipeline::Pipeline(Glib::ustring name)
-    : m_name(name)
-{
-    m_pipeline = GST_PIPELINE( gst_pipeline_new(name.c_str()) );
-
-    GstBus* bus = gst_pipeline_get_bus(m_pipeline); 
-    g_signal_connect(bus, "message::error", G_CALLBACK( handleErrorMessage ), NULL);
-    g_signal_connect(bus, "message::warning", G_CALLBACK( handleWarningMessage ), NULL);
-    g_signal_connect(bus, "message::info", G_CALLBACK( handleInfoMessage ), NULL);
-}
+    : Pipeline(GST_PIPELINE( gst_pipeline_new(name.c_str()) ))
+{}
 
 Pipeline::Pipeline(GstPipeline* gst_pipeline)
     : m_name(std::move(gst_element_get_name(gst_pipeline)))
     , m_pipeline(gst_pipeline)
 {
     GstBus* bus = gst_pipeline_get_bus(m_pipeline); 
+    gst_bus_add_signal_watch(bus);
     g_signal_connect(bus, "message::error", G_CALLBACK( handleErrorMessage ), NULL);
     g_signal_connect(bus, "message::warning", G_CALLBACK( handleWarningMessage ), NULL);
     g_signal_connect(bus, "message::info", G_CALLBACK( handleInfoMessage ), NULL);
@@ -88,7 +83,6 @@ gboolean Pipeline::handleErrorMessage(GstBus* bus, GstMessage* msg, gpointer dat
 }
 gboolean Pipeline::handleWarningMessage(GstBus* bus, GstMessage* msg, gpointer data)
 {
-
     return TRUE;
 }
 gboolean Pipeline::handleInfoMessage(GstBus* bus, GstMessage* msg, gpointer data)
@@ -102,7 +96,7 @@ void Pipeline::createElement(const gchar* name)
     auto element = gst_element_factory_create(factory, name);
     
     if(gst_bin_add(GST_BIN ( m_pipeline ), element))
-        signal_created_element.emit(ElementUtils::getElementInfo(*element));
+        signal_element_added.emit(new Element(element));
 }
 
 std::unique_ptr<GstIterator, GstIteratorFreeFunction> Pipeline::getElementsSorted()

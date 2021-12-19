@@ -9,27 +9,19 @@ class Element : public Glib::Object{
         Element(GstElement*);
         ~Element();
 
+        bool operator==(Element* elem) const { return m_element == elem->getBase(); };
+        bool operator==(GstElement* elem) const { return m_element == elem; };
+
         const gchar* getName() const;
+        GstElement* getBase() const { return m_element; }
+        GstElement* getPeer() const { return GST_ELEMENT( gst_pad_get_parent(GST_PAD_PEER(m_element)) ); }
 
-        void addSink(GstPad* pad) { m_sinks.push_front(pad); }
-        void addSource(GstPad* pad) { m_sources.push_front(pad); }
-
-        std::list<GstPad*>& getSinks() { return m_sinks; }
-        std::list<GstPad*>& getSources() { return m_sources; }
-
-        int getNumSinks() const { return m_sinks.size(); }
-        int getNumSources() const { return m_sources.size(); }
-
-        int getIndexOfSink(GstPad*) const;
-        int getIndexOfSource(GstPad*) const;
+        GList* getSinks() const;
+        GList* getSources() const;
 
         static int isPadLinked(GstPad*);
 
     private:
         GstElement* m_element;
-
-        static gboolean countPads(GstElement*, GstPad*, gpointer instance);
-        std::list<GstPad*> m_sinks;
-        std::list<GstPad*> m_sources;
 
 };

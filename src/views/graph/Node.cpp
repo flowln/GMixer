@@ -1,43 +1,75 @@
 #include "views/graph/Node.h"
+#include "views/graph/Pad.h"
+#include "views/graph/GraphViewer.h"
 
-#define IO_VERTICAL_SIZE   0.1 
-#define IO_HORIZONTAL_SIZE 0.1 * m_height_by_width
+#define node_to_pad_width   0.1
+#define node_to_pad_height  0.2
+
+void Node::deselect()
+{ 
+    m_is_selected = false; 
+    m_selected_pad = nullptr;
+
+    for(int i = numOfInputs() - 1; i >= 0; i--)
+        m_input_pads.at(i)->cancelLinking();
+    for(int i = numOfOutputs() - 1; i >= 0; i--)
+        m_output_pads.at(i)->cancelLinking();
+}
 
 Node::Node(GraphViewer* parent, Glib::ustring name, int x, int y)
     : m_parent(parent)
     , m_name(name)
-    , m_x(x), m_y(y)
-{}
-
-void Node::setPosition()
 {
-    m_offset_x = 0;
-    m_offset_y = 0;
+    setSize(160.0, 80.0);
+    setPosition(x, y);
+}
+
+void Node::setPosition(int new_x, int new_y)
+{
+    m_x = new_x;
+    m_y = new_y;
+
+    for(int i = numOfInputs() - 1; i >= 0; i--)
+        updateInputPadGeometry(m_input_pads.at(i), i); 
+    for(int i = numOfOutputs() - 1; i >= 0; i--)
+        updateOutputPadGeometry(m_output_pads.at(i), i); 
 
     update_callback(); 
 }
 
-void Node::changePosition(int offset_x, int offset_y)
-{
-    m_x += offset_x - m_offset_x;
-    m_y += offset_y - m_offset_y;
-    m_offset_x = offset_x;
-    m_offset_y = offset_y;
-
-    update_callback();
+void Node::addInputPad(InputPad* pad)
+{ 
+    m_input_pads.push_back(pad); 
+    for(int i = numOfInputs() - 1; i >= 0; i--)
+        updateInputPadGeometry(m_input_pads.at(i), i); 
+}
+void Node::addOutputPad(OutputPad* pad) 
+{ 
+    m_output_pads.push_back(pad); 
+    for(int i = numOfOutputs() - 1; i >= 0; i--)
+        updateOutputPadGeometry(m_output_pads.at(i), i); 
 }
 
 void Node::onClick(double x, double y)
 {
-    auto n = numberOfIOPad(x, y);
-    if(n < 0){
-        select();
-        return;
-    }
+    select();
 
-    bool is_input = n < m_inputs;
-    int index = is_input ? n : n - m_inputs;
-    link_callback(is_input, this, index);
+    if(x <= m_x + 0.1*m_width){
+        InputPad* closest = m_input_pads.at(0);
+        for(auto in : m_input_pads){
+            closest = (closest->lastY() - y) < (in->lastY() - y) ? closest : in;
+        }
+        closest->stageLinking();
+        m_selected_pad = closest;
+    }
+    else if(x >= m_x + 0.9*m_width){
+        OutputPad* closest = m_output_pads.at(0);
+        for(auto out : m_output_pads){
+            closest = (closest->lastY() - y) < (out->lastY() - y) ? closest : out;
+        }
+        closest->stageLinking();
+        m_selected_pad = closest;
+    }
 }
 
 void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
@@ -51,18 +83,19 @@ void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
     cr->rectangle(0, 0, 1, 1); 
     cr->fill();
 
-    cr->set_source_rgb(0.1, 0.1, 0.1);
-
-    if(m_inputs > 0)
-        drawInputs(cr);
-    if(m_outputs > 0)
-        drawOutputs(cr);
-
-    cr->fill();
-
     cr->restore(); // Pre-scale
     
+    if(numOfInputs() > 0){
+        for(auto in : m_input_pads)
+            in->draw(cr);
+    }
+    if(numOfOutputs() > 0){
+        for(auto out : m_output_pads)
+            out->draw(cr);
+    }
+
     cr->save();    // Pre-border
+    // FIXME: Do this while scaled
     if(m_is_selected){
         cr->set_source_rgb(0.1, 0.1, 0.5);
         cr->set_line_width(4);
@@ -76,6 +109,7 @@ void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
     }
     cr->restore(); // Pre-border
 
+
     drawName(cr);
 
     cr->restore(); // Pre-draw
@@ -87,74 +121,36 @@ bool Node::contains(double x, double y) const
             (y >= m_y && y <= m_y + m_height);
 }
         
-int Node::numberOfIOPad(double x, double y) const
-{
-    if(x <= m_x + IO_HORIZONTAL_SIZE * m_width){
-        // In inputs
-        double step = 1.0 / (m_inputs + 1);
-        double off  = (y - m_y) / (step * m_height);
-        if(std::abs(off - std::round(off)) <= IO_VERTICAL_SIZE / (2*step))
-            return std::round(off) - 1;
-    } 
-    else if(x >= m_x + m_width - IO_HORIZONTAL_SIZE * m_width){
-        // In outputs
-        double step = 1.0 / (m_outputs + 1);
-        double off  = (y - m_y) / (step * m_height);
-        if(std::abs(off - std::round(off)) <= IO_VERTICAL_SIZE / (2*step))
-            return m_inputs + std::round(off) - 1;
-    }
-
-    return -1;
-}
-
-std::pair<double, double> Node::IOPadToPosition(bool is_input, int index_pad) const
-{
-    double x_pos = -1.0;
-    double y_pos = -1.0;
-    if(is_input){
-        x_pos = m_x + IO_HORIZONTAL_SIZE / 2;
-        auto y_step = m_height / (m_inputs + 1);
-        y_pos = m_y + y_step * (index_pad + 1);
-    }
-    else{
-        x_pos = m_x + m_width - IO_HORIZONTAL_SIZE / 2;
-        auto y_step = m_height / (m_outputs + 1);
-        y_pos = m_y + y_step * (index_pad + 1);
-    }
-
-    return {x_pos, y_pos};
-}
-
-void Node::setSize(int new_width, int new_height)
+void Node::setSize(double new_width, double new_height)
 {
     m_width = new_width;
     m_height = new_height;
-    m_height_by_width = ((double) m_height) / m_width;
+
+    for(auto in : m_input_pads)
+        in->setSize(new_width * node_to_pad_width, new_height * node_to_pad_height);
+    for(auto out : m_output_pads)
+        out->setSize(new_width * node_to_pad_width, new_height * node_to_pad_height);
+
     update_callback();
 }
 
-inline void Node::drawInputs(const Cairo::RefPtr<Cairo::Context>& cr) const
+void Node::updateInputPadGeometry(InputPad* pad, int start_index)
 {
-    double step = 1.0 / (m_inputs + 1);
-    auto temp_y = step;
+    pad->setSize(m_width * node_to_pad_width, m_height * node_to_pad_height);
 
-    for(int i = 0; i < m_inputs; i++){
-        cr->rectangle(0.0, temp_y - IO_VERTICAL_SIZE / 2, IO_HORIZONTAL_SIZE, IO_VERTICAL_SIZE);
-        temp_y += step;
-    }
-
+    double step = m_height / (numOfInputs() + 1);
+    int i = start_index >= 0 ? start_index : numOfInputs() - 1;
+    for(; i >= 0; i--) if(m_input_pads.at(i) == pad) break;
+    pad->setPosition(m_x + m_width * node_to_pad_width / 2, m_y + (i+1)*step);
 }
-
-inline void Node::drawOutputs(const Cairo::RefPtr<Cairo::Context>& cr) const
+void Node::updateOutputPadGeometry(OutputPad* pad, int start_index)
 {
-    double step = 1.0 / (m_outputs + 1);
-    auto temp_y = step;
+    pad->setSize(m_width * node_to_pad_width, m_height * node_to_pad_height);
 
-    for(int i = 0; i < m_outputs; i++){
-        cr->rectangle(1.0 - IO_HORIZONTAL_SIZE, temp_y - IO_VERTICAL_SIZE / 2, IO_HORIZONTAL_SIZE, IO_VERTICAL_SIZE);
-        temp_y += step;
-    }
-
+    double step = m_height / (numOfOutputs() + 1);
+    int i = start_index >= 0 ? start_index : numOfOutputs() - 1;
+    for(; i >= 0; i--) if(m_output_pads.at(i) == pad) break;
+    pad->setPosition(m_x + m_width - m_width * node_to_pad_width / 2, m_y + (i+1)*step);
 }
 
 inline void Node::drawName(const Cairo::RefPtr<Cairo::Context>& cr) const

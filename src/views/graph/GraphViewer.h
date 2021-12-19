@@ -1,7 +1,6 @@
 #pragma once
 
-#include "views/graph/Node.h"
-#include "views/graph/Link.h"
+#include <gst/gstelement.h>
 
 #include <gtkmm/drawingarea.h>
 #include <gtkmm/gestureclick.h>
@@ -9,7 +8,9 @@
 #include <gtkmm/eventcontrollermotion.h>
 
 //Forward-declaration
+class ElementNode;
 class PipelineGraph;
+class Node;
 enum class OperationMode;
 
 class GraphViewer : public Gtk::DrawingArea {
@@ -17,13 +18,13 @@ class GraphViewer : public Gtk::DrawingArea {
         GraphViewer(PipelineGraph* parent);
 
         Node* searchNodeWithName(Glib::ustring name);
+        ElementNode* searchForElement(GstElement*);
         void addNode(Node* node);
         void removeNode(Node* node);
 
         OperationMode getMode();
 
         void draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height);
-        void link(bool is_input, Node* node, int index);
 
         void pressed(int n, double x, double y);
         void beginDrag(double x, double y);
@@ -31,6 +32,7 @@ class GraphViewer : public Gtk::DrawingArea {
         void endDrag(double offset_x, double offset_y);
         void moved(double x, double y);
 
+        static double cursor_pos_x, cursor_pos_y;
     private:
         PipelineGraph* m_parent;
 
@@ -39,10 +41,9 @@ class GraphViewer : public Gtk::DrawingArea {
         Glib::RefPtr<Gtk::EventControllerMotion> m_motion_controller;
 
         std::vector<Node*> m_nodes;
-        std::vector<Link*>  m_links; 
         
-        Link* m_constructing_link = nullptr;
         Node* m_selected_node = nullptr;
+        int m_selected_start_x, m_selected_start_y;
 
         bool m_is_dragging = false;
 };

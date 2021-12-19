@@ -2,40 +2,58 @@
 #include "views/PipelineEditor.h"
 #include "views/graph/ElementNode.h"
 #include "views/graph/GraphViewer.h"
+#include "views/graph/Pad.h"
+
+ElementNode* ElementNode::create(GraphViewer* parent, Element* element, int x, int y)
+{
+    auto node = new ElementNode(parent, element, x, y);
+    node->updateNode();
+    return node;
+}
+
+ElementNode* ElementNode::create(GraphViewer* parent, const gchar* element_name, int x, int y)
+{
+    return ElementNode::create(parent, new Element(element_name), x, y);
+}
 
 ElementNode::ElementNode(GraphViewer* parent, Element* element, int x, int y)
     : Node(parent, element->getName(), x, y)
     , m_element(element)
 {
-    setNumInputs(element->getNumSinks());
-    setNumOutputs(element->getNumSources());
-
-    for(auto pad : element->getSinks()){
-        if(Element::isPadLinked(pad)){
-            auto peer_pad = GST_PAD_PEER( pad );
-            auto name = gst_element_get_name(GST_PAD_PARENT( peer_pad ));
-            auto peer = dynamic_cast<ElementNode*>(parent->searchNodeWithName(Glib::ustring::sprintf("%s", name)));
-            if(!peer) break;
-            parent->link(true, this, element->getIndexOfSink(pad));
-            parent->link(false, peer, peer->getElement()->getIndexOfSource( peer_pad ));
-        }
+    auto sources = element->getSources();
+    while(sources){
+        addInputPad(new InputPad(this, GST_PAD( sources->data )));
+        sources = sources->next; 
     }
-    for(auto pad : element->getSources()){
-        if(Element::isPadLinked(pad)){
-            auto peer_pad = GST_PAD_PEER( pad );
-            auto name = gst_element_get_name(GST_PAD_PARENT( peer_pad ));
-            auto peer = dynamic_cast<ElementNode*>(parent->searchNodeWithName(Glib::ustring::sprintf("%s", name)));
-            if(!peer) break;
-            parent->link(false, this, element->getIndexOfSource(pad));
-            parent->link(true, peer, peer->getElement()->getIndexOfSink( peer_pad ));
-        }
+    auto sinks = element->getSinks();
+    while(sinks){
+        addOutputPad(new OutputPad(this, GST_PAD( sinks->data )));
+        sinks = sinks->next; 
     }
-
 }
 
-ElementNode::ElementNode(GraphViewer* parent, const gchar* element_name, int x, int y)
-    : ElementNode(parent, new Element(element_name), x, y)
-{}
+void ElementNode::updateNode()
+{
+    for(auto in : m_input_pads){
+        if(in->isOutdated()){
+            auto peer = in->getPeerOfBase();
+            if(peer)
+                in->link(peer);
+        }
+    }
+    for(auto out : m_output_pads){
+        if(out->isOutdated()){
+            auto peer = out->getPeerOfBase();
+            if(peer)
+                out->link(peer);
+        }
+    }
+}
+
+bool ElementNode::operator==(Element* elem)
+{
+    return elem == m_element;
+}
 
 void ElementNode::select()
 {
@@ -61,4 +79,15 @@ void ElementNode::deselect()
     case(OperationMode::MODE_MOVE):
         break;
     }
+}
+
+Pad* ElementNode::searchForPeer(GstPad* pad)
+{
+    for(auto in : m_input_pads){
+        if(GST_PAD_PEER( pad ) == in->getBase()) return in;
+    }
+    for(auto out : m_output_pads){
+        if(GST_PAD_PEER( pad ) == out->getBase()) return out;
+    }
+    return nullptr;
 }
