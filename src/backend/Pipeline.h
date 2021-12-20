@@ -19,9 +19,8 @@ class Pipeline : public Glib::Object {
         static gboolean handleWarningMessage(GstBus*, GstMessage*, gpointer);
         static gboolean handleInfoMessage(GstBus*, GstMessage*, gpointer);
 
-        void createElement(const gchar* name);
+        Element* createElement(const gchar* name);
         std::unique_ptr<GstIterator, GstIteratorFreeFunction> getElementsSorted();
-        sigc::signal<void(Element*)> signal_element_added;
 
         Glib::ustring getName() const{ return m_name; }
         Glib::ustring* getNameReference() { return &m_name; }

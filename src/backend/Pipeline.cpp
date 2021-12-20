@@ -90,13 +90,14 @@ gboolean Pipeline::handleInfoMessage(GstBus* bus, GstMessage* msg, gpointer data
     return TRUE;
 }
 
-void Pipeline::createElement(const gchar* name)
+Element* Pipeline::createElement(const gchar* name)
 {
     auto factory = gst_element_factory_find(name);
     auto element = gst_element_factory_create(factory, name);
     
     if(gst_bin_add(GST_BIN ( m_pipeline ), element))
-        signal_element_added.emit(new Element(element));
+        return new Element(element);
+    return nullptr;
 }
 
 std::unique_ptr<GstIterator, GstIteratorFreeFunction> Pipeline::getElementsSorted()
