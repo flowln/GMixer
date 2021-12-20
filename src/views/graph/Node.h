@@ -18,6 +18,8 @@ class Node {
 
         void addInputPad(InputPad* pad);
         void addOutputPad(OutputPad* pad);
+        std::vector<InputPad*>& getInputPads() { return m_input_pads; };
+        std::vector<OutputPad*>& getOutputPads() { return m_output_pads; };
         Pad* selectedPad() const { return m_selected_pad; }
 
         void onUpdateCallback(sigc::slot<void(void)> cb) { update_callback = cb; };

@@ -64,6 +64,7 @@ void ElementNode::select()
         //TODO: Open property tab on the side
         break;
     case(OperationMode::MODE_MOVE):
+    case(OperationMode::MODE_CUT):
         break;
     }
 }
@@ -77,6 +78,7 @@ void ElementNode::deselect()
         //TODO: Close property tab on the side
         break;
     case(OperationMode::MODE_MOVE):
+    case(OperationMode::MODE_CUT):
         break;
     }
 }

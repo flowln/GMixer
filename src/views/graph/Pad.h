@@ -29,6 +29,7 @@ class Pad {
         virtual void link(Pad* peer, bool initiator = true) {};
         virtual void unlink(bool initiator = true) {};
 
+        Pad* getPeer() { return m_peer; };
         Pad* getPeerOfBase();
 
     protected:

@@ -32,6 +32,10 @@ class GraphViewer : public Gtk::DrawingArea {
         void endDrag(double offset_x, double offset_y);
         void moved(double x, double y);
 
+        void beginMoveOperation(double x, double y);
+        void beginCutOperation(double x, double y);
+        void endCutOperation(double x, double y);
+
         static double cursor_pos_x, cursor_pos_y;
     private:
         PipelineGraph* m_parent;
@@ -43,7 +47,9 @@ class GraphViewer : public Gtk::DrawingArea {
         std::vector<Node*> m_nodes;
         
         Node* m_selected_node = nullptr;
-        int m_selected_start_x, m_selected_start_y;
+        int m_move_start_x, m_move_start_y;
+        int m_cut_start_x, m_cut_start_y;
 
         bool m_is_dragging = false;
+        bool m_is_cutting = false;
 };

@@ -58,19 +58,24 @@ void InputPad::link(Pad* peer, bool initiator)
     if(!out)
         return;
 
-    if(isLinked())
-        unlink();
+    if(initiator){
+        if(isLinked())
+            unlink();
+        out->link(this, false);
+        if(m_base && peer && peer->getBase() && !isOutdated())
+            gst_pad_link(peer->getBase(), m_base);
+    }
 
     m_peer = out;
     m_initiator = initiator;
-
-    if(initiator)
-        out->link(this, false);
 }
 void InputPad::unlink(bool initiator)
 {
-    if(initiator)
+    if(initiator){
         m_peer->unlink(false);
+        if(m_base)
+            gst_pad_unlink(m_peer->getBase(), m_base);
+    }
 
     m_peer = nullptr;
 }
@@ -81,16 +86,24 @@ void OutputPad::link(Pad* peer, bool initiator)
     if(!in)
         return;
 
+    if(initiator){
+        if(isLinked())
+            unlink();
+        in->link(this, false);
+        if(m_base && peer && peer->getBase() && !isOutdated())
+            gst_pad_link(m_base, peer->getBase());
+    }
+
     m_peer = in;
     m_initiator = initiator;
-
-    if(initiator)
-        in->link(this, false);
 }
 void OutputPad::unlink(bool initiator)
 {
-    if(initiator)
+    if(initiator){
         m_peer->unlink(false);
+        if(m_base)
+            gst_pad_unlink(m_base, m_peer->getBase());
+    }
 
     m_peer = nullptr;
 }
