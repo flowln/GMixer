@@ -191,6 +191,9 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     auto filter_tab_name = Gtk::make_managed<Gtk::Label>("Filters");
     auto sink_tab_name   = Gtk::make_managed<Gtk::Label>("Sinks");
 
+    m_notebook.set_hexpand(true);
+    m_notebook.set_size_request(120, 280);
+
     m_notebook.insert_page(*source_page, *source_tab_name, 0);
     m_notebook.insert_page(*filter_page, *filter_tab_name, 1);
     m_notebook.insert_page(*sink_page,   *sink_tab_name,   2);

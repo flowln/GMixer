@@ -11,11 +11,11 @@ MainWindow::MainWindow()
     : m_main_container()
 { 
     set_title("GMixer");
-    set_default_size(900, 450);
+    set_size_request(750, 500);
     set_titlebar(*HeaderBar::create());
 
-    m_main_container.set_row_homogeneous(true);
-    m_main_container.set_column_homogeneous(true);
+    //m_main_container.set_row_homogeneous(true);
+    //m_main_container.set_column_homogeneous(true);
 
     auto element_selector = ElementSelector::create(this);
     auto pipeline_selector = PipelineSelector::create(this); 
@@ -33,8 +33,8 @@ MainWindow::MainWindow()
             attachEditor(*editor);
         });
 
-    m_main_container.attach(element_selector->the(), 1, 6, 20, 4);
-    m_main_container.attach(pipeline_selector->the(), 0, 0, 1, 10);
+    m_main_container.attach(element_selector->the(), 1, 1, 1, 1);
+    m_main_container.attach(pipeline_selector->the(), 0, 0, 1, 2);
 
     set_child(m_main_container);
 }
@@ -49,6 +49,6 @@ void MainWindow::attachEditor(PipelineEditor& editor)
     auto last_child = m_main_container.get_child_at(1, 0);
     if(last_child)
         m_main_container.remove(*last_child);
-    m_main_container.attach(editor, 1, 0, 20, 6);
+    m_main_container.attach(editor, 1, 0, 1, 1);
 }
 

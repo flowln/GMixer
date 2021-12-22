@@ -40,6 +40,9 @@ PipelineSelector::PipelineSelector(MainWindow* main_window)
 {
     PipelineFactory::setMainWindow(main_window);
     PipelineListModel::create();
+
+    m_list.set_size_request(100, -1);
+    m_list.set_vexpand(true);
     
     m_list.set_model(m_model->getModel());
     //FIXME: Add CSS to center column header
