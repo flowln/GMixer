@@ -16,8 +16,7 @@ class ElementNode : public Node {
 
         bool operator==(Element*);
 
-        virtual void select() override;
-        virtual void deselect() override;
+        virtual const std::unique_ptr<GMixer::PropertyList> getProperties() override;
 
         Element* getElement() { return m_element; };
         Pad* searchForPeer(GstPad*);

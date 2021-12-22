@@ -4,6 +4,10 @@
 #include "views/graph/GraphViewer.h"
 #include "views/graph/Pad.h"
 
+#include <variant>
+
+using namespace GMixer;
+
 ElementNode* ElementNode::create(GraphViewer* parent, Element* element, int x, int y)
 {
     auto node = new ElementNode(parent, element, x, y);
@@ -55,32 +59,54 @@ bool ElementNode::operator==(Element* elem)
     return elem == m_element;
 }
 
-void ElementNode::select()
+const std::unique_ptr<PropertyList> ElementNode::getProperties() 
 {
-    Node::select();
+    auto ptr = std::make_unique<PropertyList>();
+    ptr->add(&m_name);
 
-    switch(m_parent->getMode()){
-    case(OperationMode::MODE_SELECT):
-        //TODO: Open property tab on the side
-        break;
-    case(OperationMode::MODE_MOVE):
-    case(OperationMode::MODE_CUT):
-        break;
+    guint num_props;
+    auto props = m_element->getProperties(&num_props);
+    for(guint i = 0; i < num_props; i++){
+        auto prop = props[i];
+        auto property = new Property(g_param_spec_get_name(prop), true);
+
+        property->addField("desc", g_param_spec_get_blurb(prop), G_TYPE_STRING);
+
+        auto def = g_param_spec_get_default_value(prop);
+        auto def_type = G_VALUE_TYPE( def );
+        std::string str;
+
+        if     (g_type_is_a(def_type, G_TYPE_STRING) )
+            str = g_value_get_string(def) ? g_value_get_string(def) : "NULL";
+        else if(g_type_is_a(def_type, G_TYPE_INT) )
+            str = std::to_string(g_value_get_int(def));
+        else if(g_type_is_a(def_type, G_TYPE_INT64) )
+            str = std::to_string(g_value_get_int64(def));
+        else if(g_type_is_a(def_type, G_TYPE_UINT) )
+            str = std::to_string(g_value_get_uint(def));
+        else if(g_type_is_a(def_type, G_TYPE_UINT64) )
+            str = std::to_string(g_value_get_uint64(def));
+        else if(g_type_is_a(def_type, G_TYPE_LONG) )
+            str = std::to_string(g_value_get_long(def));
+        else if(g_type_is_a(def_type, G_TYPE_ULONG) )
+            str = std::to_string(g_value_get_ulong(def));
+        else if(g_type_is_a(def_type, G_TYPE_FLOAT) )
+            str = std::to_string(g_value_get_float(def));
+        else if(g_type_is_a(def_type, G_TYPE_DOUBLE) )
+            str = std::to_string(g_value_get_double(def));
+        else if(g_type_is_a(def_type, G_TYPE_BOOLEAN) )
+            str = std::to_string(g_value_get_boolean(def));
+        // TODO: Add special enums / objects 
+
+        if(!str.empty())
+            property->addField("default", str, def_type); 
+
+        ptr->add(property);
     }
-}
 
-void ElementNode::deselect()
-{
-    Node::deselect();
+    g_free(props);
 
-    switch(m_parent->getMode()){
-    case(OperationMode::MODE_SELECT):
-        //TODO: Close property tab on the side
-        break;
-    case(OperationMode::MODE_MOVE):
-    case(OperationMode::MODE_CUT):
-        break;
-    }
+    return ptr;
 }
 
 Pad* ElementNode::searchForPeer(GstPad* pad)

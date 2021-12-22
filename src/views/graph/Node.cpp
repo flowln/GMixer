@@ -1,9 +1,12 @@
+#include "signals/Graph.h"
 #include "views/graph/Node.h"
 #include "views/graph/Pad.h"
 #include "views/graph/GraphViewer.h"
 
 #define node_to_pad_width   0.1
 #define node_to_pad_height  0.2
+
+using namespace GMixer;
 
 void Node::deselect()
 { 
@@ -14,6 +17,18 @@ void Node::deselect()
         m_input_pads.at(i)->cancelLinking();
     for(int i = numOfOutputs() - 1; i >= 0; i--)
         m_output_pads.at(i)->cancelLinking();
+}
+void Node::select()
+{ 
+    m_is_selected = true; 
+    Signals::node_selected().emit(this);
+}
+
+const std::unique_ptr<PropertyList> Node::getProperties() 
+{
+    auto ptr = std::make_unique<PropertyList>();
+    ptr->add(&m_name);
+    return ptr;
 }
 
 Node::Node(GraphViewer* parent, Glib::ustring name, int x, int y)
@@ -160,7 +175,7 @@ inline void Node::drawName(const Cairo::RefPtr<Cairo::Context>& cr) const
 
     // Based on https://www.cairographics.org/samples/text_align_center/ by Øyvind Kolås
     Cairo::TextExtents t;
-    cr->get_text_extents(m_name, t);
+    cr->get_text_extents(getName().c_str(), t);
 
     auto middle_x = m_x + m_width / 2;
     auto middle_y = m_y + m_height / 2;
@@ -169,6 +184,6 @@ inline void Node::drawName(const Cairo::RefPtr<Cairo::Context>& cr) const
     auto corrected_y = middle_y - (t.height/2 + t.y_bearing);
 
     cr->move_to(corrected_x, corrected_y);
-    cr->show_text(m_name);
+    cr->show_text(getName().c_str());
 
 }

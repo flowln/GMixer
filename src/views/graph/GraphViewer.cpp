@@ -44,16 +44,6 @@ ElementNode* GraphViewer::searchForElement(GstElement* elem)
     return nullptr;
 }
 
-Node* GraphViewer::searchNodeWithName(Glib::ustring name)
-{
-    for(auto node : m_nodes){
-        if(node->getName() == name)
-            return node;
-    }
-
-    return nullptr;
-}
-
 void GraphViewer::addNode(Node* node)
 {
     m_nodes.push_back(node);

@@ -17,7 +17,6 @@ class GraphViewer : public Gtk::DrawingArea {
     public:
         GraphViewer(PipelineGraph* parent);
 
-        Node* searchNodeWithName(Glib::ustring name);
         ElementNode* searchForElement(GstElement*);
         void addNode(Node* node);
         void removeNode(Node* node);
@@ -27,10 +26,10 @@ class GraphViewer : public Gtk::DrawingArea {
         void draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height);
 
         void pressed(int n, double x, double y);
+        void moved(double x, double y);
         void beginDrag(double x, double y);
         void updateDrag(double offset_x, double offset_y);
         void endDrag(double offset_x, double offset_y);
-        void moved(double x, double y);
 
         void beginMoveOperation(double x, double y);
         void beginCutOperation(double x, double y);

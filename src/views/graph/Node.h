@@ -1,7 +1,10 @@
 #pragma once
 
+#include "views/graph/Property.h"
+
 #include <glibmm/ustring.h>
 #include <cairomm/cairomm.h>
+#include <forward_list>
 
 //Forward-declarations
 class GraphViewer;
@@ -27,13 +30,14 @@ class Node {
 
         void draw(const Cairo::RefPtr<Cairo::Context>& cr) const;
         bool isSelected() const { return m_is_selected; }
-        virtual void select()   { m_is_selected = true; }
-        virtual void deselect();
+        void select();
+        void deselect();
 
-        Glib::UStringView getName() const{ return m_name; }
+        Glib::UStringView getName() const { return m_name.name; }
         int getX() const { return m_x; }
         int getY() const { return m_y; }
         GraphViewer* getGraph() const { return m_parent; }
+        virtual const std::unique_ptr<GMixer::PropertyList> getProperties();
 
         bool contains(double x, double y) const;
 
@@ -51,7 +55,7 @@ class Node {
 
         GraphViewer* m_parent;
 
-        Glib::ustring m_name;
+        GMixer::Property m_name;
         double m_x, m_y;
         double m_width, m_height;
 

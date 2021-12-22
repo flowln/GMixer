@@ -18,6 +18,7 @@ class Element : public Glib::Object{
 
         GList* getSinks() const;
         GList* getSources() const;
+        GParamSpec** getProperties(guint*) const;
 
         static int isPadLinked(GstPad*);
 

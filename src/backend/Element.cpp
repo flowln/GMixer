@@ -28,6 +28,11 @@ GList* Element::getSources() const
 {
     return GST_ELEMENT_CAST( m_element )->sinkpads;
 }
+GParamSpec** Element::getProperties(guint* num_props) const
+{
+    auto props = g_object_class_list_properties(G_OBJECT_GET_CLASS( m_element ), num_props);
+    return props;
+}
 
 int Element::isPadLinked(GstPad* pad)
 {
