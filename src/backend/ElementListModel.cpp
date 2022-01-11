@@ -9,15 +9,6 @@ ElementRecord::ElementRecord()
     add(m_package);
 }
 
-gboolean checkFilter(GstElementFactory* factory)
-{
-    gboolean result;
-    auto e = gst_element_factory_create(factory, "");
-    result = (e->numsinkpads > 0) && (e->numsrcpads > 0);
-    g_object_unref(e);
-    return result;
-}
-
 gboolean checkFeatureType(GstPluginFeature* feature, ElementType& type){
     auto f = gst_element_factory_find(gst_plugin_feature_get_name(feature));
 
@@ -30,8 +21,8 @@ gboolean checkFeatureType(GstPluginFeature* feature, ElementType& type){
             result = gst_element_factory_list_is_type(f, GST_ELEMENT_FACTORY_TYPE_SRC);
             break;
         case ElementType::FILTER:
-            //FIXME: How to do this without creating a new element instance?
-            result = checkFilter(f);
+            result = !(    gst_element_factory_list_is_type(f, GST_ELEMENT_FACTORY_TYPE_SRC)
+                        || gst_element_factory_list_is_type(f, GST_ELEMENT_FACTORY_TYPE_SINK));
 
             break;
         case ElementType::SINK:
