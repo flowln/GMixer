@@ -33,11 +33,12 @@ class Node {
         void select();
         void deselect();
 
-        Glib::UStringView getName() const { return m_name.name; }
+        Glib::ustring getName() const { return m_name.getName(); }
         int getX() const { return m_x; }
         int getY() const { return m_y; }
         GraphViewer* getGraph() const { return m_parent; }
-        virtual const std::unique_ptr<GMixer::PropertyList> getProperties();
+        virtual GMixer::PropertyList* getProperties();
+        virtual bool updateProperty(GMixer::Property*, const std::string&, const std::string&){ return false; };
 
         bool contains(double x, double y) const;
 

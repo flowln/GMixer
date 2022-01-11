@@ -24,9 +24,9 @@ void Node::select()
     Signals::node_selected().emit(this);
 }
 
-const std::unique_ptr<PropertyList> Node::getProperties() 
+PropertyList* Node::getProperties() 
 {
-    auto ptr = std::make_unique<PropertyList>();
+    auto ptr = new PropertyList();
     ptr->add(&m_name);
     return ptr;
 }

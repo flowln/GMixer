@@ -59,9 +59,9 @@ bool ElementNode::operator==(Element* elem)
     return elem == m_element;
 }
 
-const std::unique_ptr<PropertyList> ElementNode::getProperties() 
+PropertyList* ElementNode::getProperties() 
 {
-    auto ptr = std::make_unique<PropertyList>();
+    auto ptr = new PropertyList();
     ptr->add(&m_name);
 
     guint num_props;
@@ -101,12 +101,19 @@ const std::unique_ptr<PropertyList> ElementNode::getProperties()
         if(!str.empty())
             property->addField("default", str, def_type); 
 
+        property->connect(sigc::mem_fun(*this, &ElementNode::updateProperty));
         ptr->add(property);
     }
 
     g_free(props);
 
     return ptr;
+}
+bool ElementNode::updateProperty(Property* property, const std::string& updated_field, const std::string& updated_value)
+{
+    printf("Property %s was updated: %s = %s\n", property->getName().c_str(), updated_field.c_str(), updated_value.c_str());
+    g_object_set(m_element->getBase(), property->getName().c_str(), updated_value.c_str(), NULL);
+    return true;
 }
 
 Pad* ElementNode::searchForPeer(GstPad* pad)
