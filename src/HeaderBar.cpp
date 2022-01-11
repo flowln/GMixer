@@ -29,13 +29,16 @@ HeaderBar::HeaderBar()
 {
     m_title = Gtk::make_managed<Gtk::Label>();
 
-    m_add_button = Gtk::make_managed<Gtk::Button>("+");
+    m_add_button = Gtk::make_managed<Gtk::Button>();
+    m_add_button->set_image_from_icon_name("list-add-symbolic");
     m_add_button->signal_clicked().connect(sigc::ptr_fun(PipelineFactory::createPipeline));
 
-    m_import_button = Gtk::make_managed<Gtk::Button>("i");
+    m_import_button = Gtk::make_managed<Gtk::Button>();
+    m_import_button->set_image_from_icon_name("document-open-symbolic");
     m_import_button->signal_clicked().connect(sigc::ptr_fun(PipelineFactory::createPipelineFromFile));
 
-    m_save_button = Gtk::make_managed<Gtk::Button>("s");
+    m_save_button = Gtk::make_managed<Gtk::Button>();
+    m_save_button->set_image_from_icon_name("document-save-symbolic");
     m_save_button->signal_clicked().connect(sigc::ptr_fun(PipelineSaver::saveCurrentPipeline));
 
     m_bar = Gtk::make_managed<Gtk::HeaderBar>();
