@@ -6,8 +6,7 @@
 
 #include "client/ElementSelector.h"
 #include "client/PipelineSelector.h"
-
-#include "MainWindow.h"
+#include "client/MainWindow.h"
 
 #include <gtkmm/paned.h>
 

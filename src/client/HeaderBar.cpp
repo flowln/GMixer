@@ -1,9 +1,9 @@
-#include "HeaderBar.h"
+#include "client/HeaderBar.h"
 
+#include "client/PipelineSelector.h"
 #include "gstreamer/FileUtils.h"
 #include "gstreamer/PipelineIO.h"
 #include "gstreamer/PipelineListModel.h"
-#include "client/PipelineSelector.h"
 #include "signals/Pipelines.h"
 
 #include <sigc++/functors/ptr_fun.h>

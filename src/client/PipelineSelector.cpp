@@ -6,9 +6,8 @@
 
 #include "client/PipelineEditor.h"
 #include "client/PipelineSelector.h"
-
-#include "HeaderBar.h"
-#include "MainWindow.h"
+#include "client/HeaderBar.h"
+#include "client/MainWindow.h"
 
 PipelineSelector* PipelineSelector::s_instance = nullptr;
 

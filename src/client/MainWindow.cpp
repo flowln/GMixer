@@ -1,10 +1,10 @@
-#include "MainWindow.h"
+#include "client/MainWindow.h"
 
-#include "HeaderBar.h"
-
+#include "client/HeaderBar.h"
 #include "client/ElementSelector.h"
 #include "client/PipelineEditor.h"
 #include "client/PipelineSelector.h"
+
 #include "signals/Pipelines.h"
 
 MainWindow::MainWindow()
