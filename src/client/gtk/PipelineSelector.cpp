@@ -4,10 +4,10 @@
 
 #include "signals/Pipelines.h"
 
-#include "client/PipelineEditor.h"
-#include "client/PipelineSelector.h"
-#include "client/HeaderBar.h"
-#include "client/MainWindow.h"
+#include "client/gtk/PipelineEditor.h"
+#include "client/gtk/PipelineSelector.h"
+#include "client/gtk/HeaderBar.h"
+#include "client/gtk/MainWindow.h"
 
 PipelineSelector* PipelineSelector::s_instance = nullptr;
 

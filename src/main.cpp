@@ -1,7 +1,7 @@
 #include <gtkmm/application.h>
 #include <gst/gst.h>
 
-#include "client/MainWindow.h"
+#include "client/gtk/MainWindow.h"
 
 int main (int argc, char *argv[])
 {

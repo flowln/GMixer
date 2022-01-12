@@ -1,8 +1,8 @@
 #include "gstreamer/Element.h"
-#include "client/PipelineEditor.h"
-#include "client/graph/ElementNode.h"
-#include "client/graph/GraphViewer.h"
-#include "client/graph/Pad.h"
+#include "client/gtk/PipelineEditor.h"
+#include "client/gtk/graph/ElementNode.h"
+#include "client/gtk/graph/GraphViewer.h"
+#include "client/gtk/graph/Pad.h"
 
 #include <variant>
 

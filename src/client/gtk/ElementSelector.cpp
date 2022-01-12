@@ -4,9 +4,9 @@
 #include "signals/Pipelines.h"
 #include "signals/Elements.h"
 
-#include "client/ElementSelector.h"
-#include "client/PipelineSelector.h"
-#include "client/MainWindow.h"
+#include "client/gtk/ElementSelector.h"
+#include "client/gtk/PipelineSelector.h"
+#include "client/gtk/MainWindow.h"
 
 #include <gtkmm/paned.h>
 

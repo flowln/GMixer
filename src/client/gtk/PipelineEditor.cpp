@@ -4,9 +4,9 @@
 #include "signals/Pipelines.h"
 #include "signals/Elements.h"
 #include "signals/Graph.h"
-#include "client/PipelineEditor.h"
-#include "client/graph/ElementNode.h"
-#include "client/graph/GraphViewer.h"
+#include "client/gtk/PipelineEditor.h"
+#include "client/gtk/graph/ElementNode.h"
+#include "client/gtk/graph/GraphViewer.h"
 
 #include <gtkmm/entry.h>
 #include <gtkmm/togglebutton.h>

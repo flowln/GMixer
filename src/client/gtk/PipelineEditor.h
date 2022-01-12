@@ -1,6 +1,6 @@
 #pragma once
 
-#include "client/graph/Property.h"
+#include "client/gtk/graph/Property.h"
 
 #include <gtkmm/actionbar.h>
 #include <gtkmm/paned.h>

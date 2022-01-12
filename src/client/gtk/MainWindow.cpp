@@ -1,9 +1,9 @@
-#include "client/MainWindow.h"
+#include "client/gtk/MainWindow.h"
 
-#include "client/HeaderBar.h"
-#include "client/ElementSelector.h"
-#include "client/PipelineEditor.h"
-#include "client/PipelineSelector.h"
+#include "client/gtk/HeaderBar.h"
+#include "client/gtk/ElementSelector.h"
+#include "client/gtk/PipelineEditor.h"
+#include "client/gtk/PipelineSelector.h"
 
 #include "signals/Pipelines.h"
 

@@ -1,7 +1,7 @@
 #include "signals/Graph.h"
-#include "client/graph/Node.h"
-#include "client/graph/Pad.h"
-#include "client/graph/GraphViewer.h"
+#include "client/gtk/graph/Node.h"
+#include "client/gtk/graph/Pad.h"
+#include "client/gtk/graph/GraphViewer.h"
 
 #define node_to_pad_width   0.1
 #define node_to_pad_height  0.2
