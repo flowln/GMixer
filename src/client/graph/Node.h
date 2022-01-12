@@ -1,6 +1,6 @@
 #pragma once
 
-#include "views/graph/Property.h"
+#include "client/graph/Property.h"
 
 #include <glibmm/ustring.h>
 #include <cairomm/cairomm.h>

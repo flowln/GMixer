@@ -3,7 +3,7 @@
 #include "gstreamer/FileUtils.h"
 #include "gstreamer/PipelineIO.h"
 #include "gstreamer/PipelineListModel.h"
-#include "views/PipelineSelector.h"
+#include "client/PipelineSelector.h"
 #include "signals/Pipelines.h"
 
 #include <sigc++/functors/ptr_fun.h>

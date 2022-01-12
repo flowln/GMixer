@@ -6,6 +6,6 @@ sources += files([
 ])
 
 subdir('signals')
-subdir('views')
+subdir('client')
 subdir('gstreamer')
 

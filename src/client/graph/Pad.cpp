@@ -1,7 +1,7 @@
-#include "views/graph/Node.h"
-#include "views/graph/Pad.h"
-#include "views/graph/ElementNode.h"
-#include "views/graph/GraphViewer.h"
+#include "client/graph/Node.h"
+#include "client/graph/Pad.h"
+#include "client/graph/ElementNode.h"
+#include "client/graph/GraphViewer.h"
 
 Pad::Pad(Node* parent, GstPad* base)
     : m_parent(parent)

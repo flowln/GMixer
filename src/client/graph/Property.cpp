@@ -1,4 +1,4 @@
-#include "views/graph/Property.h"
+#include "client/graph/Property.h"
 
 using namespace GMixer;
 

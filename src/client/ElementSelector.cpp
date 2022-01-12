@@ -4,8 +4,8 @@
 #include "signals/Pipelines.h"
 #include "signals/Elements.h"
 
-#include "views/ElementSelector.h"
-#include "views/PipelineSelector.h"
+#include "client/ElementSelector.h"
+#include "client/PipelineSelector.h"
 
 #include "MainWindow.h"
 

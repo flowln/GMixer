@@ -1,6 +1,6 @@
 #pragma once
 
-#include "views/graph/Node.h"
+#include "client/graph/Node.h"
 
 #include <gst/gstpad.h>
 

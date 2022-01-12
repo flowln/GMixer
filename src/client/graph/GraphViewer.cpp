@@ -1,9 +1,9 @@
 #include "gstreamer/Element.h"
-#include "views/PipelineEditor.h"
-#include "views/graph/GraphViewer.h"
-#include "views/graph/Node.h"
-#include "views/graph/ElementNode.h"
-#include "views/graph/Pad.h"
+#include "client/PipelineEditor.h"
+#include "client/graph/GraphViewer.h"
+#include "client/graph/Node.h"
+#include "client/graph/ElementNode.h"
+#include "client/graph/Pad.h"
 
 #include <cairomm/cairomm.h>
 

@@ -2,7 +2,7 @@
 #include "gstreamer/Pipeline.h"
 #include "gstreamer/PipelineIO.h"
 #include "gstreamer/PipelineListModel.h"
-#include "views/PipelineSelector.h"
+#include "client/PipelineSelector.h"
 
 #include <gtkmm/application.h>
 #include <gtkmm/dialog.h>

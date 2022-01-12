@@ -2,9 +2,9 @@
 
 #include "HeaderBar.h"
 
-#include "views/ElementSelector.h"
-#include "views/PipelineEditor.h"
-#include "views/PipelineSelector.h"
+#include "client/ElementSelector.h"
+#include "client/PipelineEditor.h"
+#include "client/PipelineSelector.h"
 #include "signals/Pipelines.h"
 
 MainWindow::MainWindow()
