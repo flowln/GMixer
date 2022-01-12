@@ -7,5 +7,5 @@ sources += files([
 
 subdir('signals')
 subdir('views')
-subdir('backend')
+subdir('gstreamer')
 

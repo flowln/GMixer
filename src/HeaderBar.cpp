@@ -1,11 +1,15 @@
 #include "HeaderBar.h"
 
-#include "backend/FileUtils.h"
-#include "backend/PipelineIO.h"
-#include "backend/PipelineListModel.h"
+#include "gstreamer/FileUtils.h"
+#include "gstreamer/PipelineIO.h"
+#include "gstreamer/PipelineListModel.h"
+#include "views/PipelineSelector.h"
 #include "signals/Pipelines.h"
 
 #include <sigc++/functors/ptr_fun.h>
+
+#define MEDIA_RESUME_ICON_NAME "media-playback-start-symbolic"
+#define MEDIA_PAUSE_ICON_NAME "media-playback-stop-symbolic"
 
 HeaderBar* HeaderBar::s_instance = nullptr;
 
@@ -41,11 +45,20 @@ HeaderBar::HeaderBar()
     m_save_button->set_image_from_icon_name("document-save-symbolic");
     m_save_button->signal_clicked().connect(sigc::ptr_fun(PipelineSaver::saveCurrentPipeline));
 
+    m_control_pipeline = Gtk::make_managed<Gtk::Button>();
+    m_control_pipeline->set_image_from_icon_name(MEDIA_RESUME_ICON_NAME);
+    m_control_pipeline->signal_clicked().connect(
+        [&]{
+            if(PipelineSelector::currentPipeline()->togglePlay())
+                m_control_pipeline->set_image_from_icon_name(MEDIA_PAUSE_ICON_NAME);
+        });
+
     m_bar = Gtk::make_managed<Gtk::HeaderBar>();
     m_bar->set_title_widget(*m_title);
     m_bar->pack_start(*m_add_button);
     m_bar->pack_start(*m_import_button);
     m_bar->pack_start(*m_save_button);
+    m_bar->pack_start(*m_control_pipeline);
 
     Signals::pipeline_selected().connect(
         [this](Pipeline* selected){

@@ -1,4 +1,4 @@
-#include "backend/Element.h"
+#include "gstreamer/Element.h"
 #include "views/PipelineEditor.h"
 #include "views/graph/GraphViewer.h"
 #include "views/graph/Node.h"

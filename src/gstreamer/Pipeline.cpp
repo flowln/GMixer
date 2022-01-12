@@ -1,6 +1,6 @@
-#include "backend/Element.h"
-#include "backend/ElementUtils.h"
-#include "backend/Pipeline.h"
+#include "gstreamer/Element.h"
+#include "gstreamer/ElementUtils.h"
+#include "gstreamer/Pipeline.h"
 
 Pipeline::Pipeline(Glib::ustring name)
     : Pipeline(GST_PIPELINE( gst_pipeline_new(name.c_str()) ))
@@ -88,6 +88,13 @@ gboolean Pipeline::handleWarningMessage(GstBus* bus, GstMessage* msg, gpointer d
 gboolean Pipeline::handleInfoMessage(GstBus* bus, GstMessage* msg, gpointer data)
 {
     return TRUE;
+}
+
+gboolean Pipeline::togglePlay()
+{
+    if(m_pipeline)
+        return gst_element_set_state(GST_ELEMENT( m_pipeline ), GST_STATE_PLAYING);
+    return false;
 }
 
 Element* Pipeline::createElement(const gchar* name)

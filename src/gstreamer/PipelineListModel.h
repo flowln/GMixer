@@ -1,6 +1,6 @@
 #pragma once
 
-#include  "backend/Pipeline.h"
+#include "gstreamer/Pipeline.h"
 
 #include <gtkmm/liststore.h>
 

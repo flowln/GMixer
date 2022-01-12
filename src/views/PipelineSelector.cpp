@@ -1,6 +1,6 @@
-#include "backend/Pipeline.h"
-#include "backend/PipelineIO.h"
-#include "backend/PipelineListModel.h"
+#include "gstreamer/Pipeline.h"
+#include "gstreamer/PipelineIO.h"
+#include "gstreamer/PipelineListModel.h"
 
 #include "signals/Pipelines.h"
 

@@ -19,6 +19,8 @@ class Pipeline : public Glib::Object {
         static gboolean handleWarningMessage(GstBus*, GstMessage*, gpointer);
         static gboolean handleInfoMessage(GstBus*, GstMessage*, gpointer);
 
+        gboolean togglePlay();
+
         Element* createElement(const gchar* name);
         std::unique_ptr<GstIterator, GstIteratorFreeFunction> getElementsSorted();
 

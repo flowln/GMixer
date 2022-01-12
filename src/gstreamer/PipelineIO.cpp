@@ -1,7 +1,7 @@
-#include "backend/FileUtils.h"
-#include "backend/Pipeline.h"
-#include "backend/PipelineIO.h"
-#include "backend/PipelineListModel.h"
+#include "gstreamer/FileUtils.h"
+#include "gstreamer/Pipeline.h"
+#include "gstreamer/PipelineIO.h"
+#include "gstreamer/PipelineListModel.h"
 #include "views/PipelineSelector.h"
 
 #include <gtkmm/application.h>

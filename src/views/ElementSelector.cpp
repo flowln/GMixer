@@ -1,5 +1,5 @@
-#include "backend/ElementListModel.h"
-#include "backend/ElementUtils.h"
+#include "gstreamer/ElementListModel.h"
+#include "gstreamer/ElementUtils.h"
 
 #include "signals/Pipelines.h"
 #include "signals/Elements.h"

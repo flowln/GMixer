@@ -24,4 +24,6 @@ class HeaderBar {
         Gtk::Button* m_add_button;
         Gtk::Button* m_import_button;
         Gtk::Button* m_save_button;
+
+        Gtk::Button* m_control_pipeline;
 };

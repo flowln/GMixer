@@ -1,4 +1,4 @@
-#include "backend/Element.h"
+#include "gstreamer/Element.h"
 
 Element::Element(const gchar* name)
     : Element(gst_element_factory_create(gst_element_factory_find(name), name))
