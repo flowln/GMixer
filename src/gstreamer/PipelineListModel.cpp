@@ -41,7 +41,7 @@ void PipelineListModel::addPipeline(Glib::RefPtr<Pipeline> pipeline)
     auto iter = s_instance->m_store->append();
     auto& records = s_instance->m_records;
 
-    (*iter)[records.m_pipeline_name] = *pipeline->getNameReference();
+    (*iter)[records.m_pipeline_name] = pipeline->getName();
     (*iter)[records.m_pipeline] = pipeline; 
 
     Signals::pipeline_added().emit(s_instance->getModel()->get_path(iter));

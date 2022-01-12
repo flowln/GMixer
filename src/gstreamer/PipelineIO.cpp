@@ -13,9 +13,9 @@
 
 //TODO: Move Gtk stuff out of backend/
 
-Gtk::Window* PipelineFactory::s_main_window = nullptr;
+Gtk::Window* PipelineCreator::s_main_window = nullptr;
 
-void PipelineFactory::createPipeline()
+void PipelineCreator::createPipeline()
 {
     if(!s_main_window)
         return;
@@ -53,7 +53,7 @@ void PipelineFactory::createPipeline()
         [dialog, name_entry](int response_id){
             if(response_id == GTK_RESPONSE_ACCEPT){
                 auto name = name_entry->get_text();
-                PipelineListModel::addPipeline(Glib::make_refptr_for_instance(new Pipeline(name)));
+                PipelineListModel::addPipeline(Glib::make_refptr_for_instance(PipelineFactory::createEmpty(name)));
             }
 
             dialog->close();
@@ -63,7 +63,7 @@ void PipelineFactory::createPipeline()
 
 }
 
-void PipelineFactory::createPipelineFromFile()
+void PipelineCreator::createPipelineFromFile()
 {
     if(!s_main_window)
         return;
@@ -85,7 +85,7 @@ void PipelineFactory::createPipelineFromFile()
                 if(!data)
                     return;
     
-                PipelineListModel::addPipeline(Glib::make_refptr_for_instance(Pipeline::createFromString(data->name, data->command)));
+                PipelineListModel::addPipeline(Glib::make_refptr_for_instance(PipelineFactory::createFromString(data->name, data->command)));
             }
         });
 

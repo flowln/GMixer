@@ -35,11 +35,11 @@ HeaderBar::HeaderBar()
 
     m_add_button = Gtk::make_managed<Gtk::Button>();
     m_add_button->set_image_from_icon_name("list-add-symbolic");
-    m_add_button->signal_clicked().connect(sigc::ptr_fun(PipelineFactory::createPipeline));
+    m_add_button->signal_clicked().connect(sigc::ptr_fun(PipelineCreator::createPipeline));
 
     m_import_button = Gtk::make_managed<Gtk::Button>();
     m_import_button->set_image_from_icon_name("document-open-symbolic");
-    m_import_button->signal_clicked().connect(sigc::ptr_fun(PipelineFactory::createPipelineFromFile));
+    m_import_button->signal_clicked().connect(sigc::ptr_fun(PipelineCreator::createPipelineFromFile));
 
     m_save_button = Gtk::make_managed<Gtk::Button>();
     m_save_button->set_image_from_icon_name("document-save-symbolic");
@@ -49,8 +49,16 @@ HeaderBar::HeaderBar()
     m_control_pipeline->set_image_from_icon_name(MEDIA_RESUME_ICON_NAME);
     m_control_pipeline->signal_clicked().connect(
         [&]{
-            if(PipelineSelector::currentPipeline()->togglePlay())
+            static bool is_playing = false;
+            if(is_playing){
+                if(PipelineSelector::currentPipeline()->changeState(Pipeline::State::NIL))
+                m_control_pipeline->set_image_from_icon_name(MEDIA_RESUME_ICON_NAME);
+            }
+            else{
+                if(PipelineSelector::currentPipeline()->changeState(Pipeline::State::PLAYING)) 
                 m_control_pipeline->set_image_from_icon_name(MEDIA_PAUSE_ICON_NAME);
+            }
+            is_playing = !is_playing;
         });
 
     m_bar = Gtk::make_managed<Gtk::HeaderBar>();

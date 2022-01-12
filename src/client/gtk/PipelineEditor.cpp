@@ -147,7 +147,7 @@ PipelineEditor::PipelineEditor(Gtk::Widget& parent, Pipeline* pipeline)
     Signals::element_add().connect(
         [this](Glib::UStringView name){
             if(m_is_selected){
-                m_graph->addElement(m_pipeline->createElement(name.c_str()));
+                m_graph->addElement(new Element(name.c_str()));
             }
         });
 

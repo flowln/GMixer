@@ -5,7 +5,7 @@
 // Forward-declaration
 class Pipeline;
 
-class PipelineFactory{
+class PipelineCreator{
     public:
         static void setMainWindow(Gtk::Window* main_window) { s_main_window = main_window; };
         static void createPipeline();

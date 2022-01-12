@@ -2,33 +2,75 @@
 #include "gstreamer/ElementUtils.h"
 #include "gstreamer/Pipeline.h"
 
-Pipeline::Pipeline(Glib::ustring name)
-    : Pipeline(GST_PIPELINE( gst_pipeline_new(name.c_str()) ))
+Pipeline::Pipeline(Glib::ustring& name)
+    : Pipeline(name, GST_PIPELINE( gst_pipeline_new(name.c_str()) ))
 {}
 
 Pipeline::Pipeline(GstPipeline* gst_pipeline)
-    : m_name(std::move(gst_element_get_name(gst_pipeline)))
+    : Pipeline(gst_element_get_name(gst_pipeline), gst_pipeline)
+{}
+
+Pipeline::Pipeline(Glib::ustring name, GstPipeline* gst_pipeline)
+    : m_name(name)
     , m_pipeline(gst_pipeline)
-{
-    GstBus* bus = gst_pipeline_get_bus(m_pipeline); 
-    gst_bus_add_signal_watch(bus);
-    g_signal_connect(bus, "message::error", G_CALLBACK( handleErrorMessage ), NULL);
-    g_signal_connect(bus, "message::warning", G_CALLBACK( handleWarningMessage ), NULL);
-    g_signal_connect(bus, "message::info", G_CALLBACK( handleInfoMessage ), NULL);
-}
+{}
 
 Pipeline::~Pipeline()
 {
     gst_object_unref(m_pipeline);
 }
 
-Pipeline* Pipeline::createFromString(const gchar* name, const gchar* repr)
+const gchar* Pipeline::getCommand() const
+{
+    if(!m_pipeline)
+        return nullptr;
+
+    // TODO: There's no way (it seems) to do it directly via gst...
+    // We'll probably have to iterate the pipeline and construct
+    // the command manually.
+
+    return nullptr;
+}
+
+bool Pipeline::addElement(Element* element)
+{
+    if(!element)
+        return false;
+
+    return gst_bin_add(GST_BIN ( m_pipeline ), element->getBase());
+}
+
+inline GstStateChange getChange(GstState bef, Pipeline::State aft)
+{
+    return GstStateChange((bef << 3) | aft);
+}
+
+Pipeline::StateChangeResult Pipeline::changeState(Pipeline::State new_state)
+{
+    return static_cast<StateChangeResult>(gst_element_change_state(GST_ELEMENT(m_pipeline), ::getChange(GST_STATE(m_pipeline), new_state)));
+}
+
+Pipeline::State Pipeline::currentState() const
+{
+    return static_cast<State>(GST_STATE(m_pipeline));
+}
+
+// Pipeline Factory
+
+Pipeline* PipelineFactory::createEmpty(Glib::ustring& name)
+{
+    auto pipeline = new Pipeline(name);
+    pipeline->addWatcher(&PipelineFactory::defaultMessageHandler );
+    return pipeline;
+}
+
+Pipeline* PipelineFactory::createFromString(Glib::ustring&& name, const gchar* repr)
 {
     auto context = gst_parse_context_new();
     GError* error = nullptr;
     
-    auto pipeline = gst_parse_launch_full(repr, context, GST_PARSE_FLAG_NONE, &error);
-    if(!pipeline){ // Could not create bin
+    auto gst_pipeline = gst_parse_launch_full(repr, context, GST_PARSE_FLAG_NONE, &error);
+    if(!gst_pipeline){ // Could not create bin
         if(error->code == GST_PARSE_ERROR_NO_SUCH_ELEMENT){
             g_printerr("[ERROR] The following elements could not be found: \n");
             auto missing = gst_parse_context_get_missing_elements(context);
@@ -53,66 +95,62 @@ Pipeline* Pipeline::createFromString(const gchar* name, const gchar* repr)
 
     gst_parse_context_free(context);
 
-    gst_element_set_name(pipeline, std::move(name));
-    return new Pipeline(GST_PIPELINE( pipeline ));
+    gst_element_set_name(gst_pipeline, std::move(name.c_str()));
+    auto pipeline = new Pipeline(name, GST_PIPELINE( gst_pipeline )); 
+    pipeline->addWatcher(&PipelineFactory::defaultMessageHandler );
+    return pipeline;
 }
 
-const gchar* Pipeline::getCommand() const
+Pipeline* PipelineFactory::wrapBasePipeline(GstPipeline* gst_pipeline)
 {
-    if(!m_pipeline)
-        return nullptr;
-
-    // TODO: There's no way (it seems) to do it directly via gst...
-    // We'll probably have to iterate the pipeline and construct
-    // the command manually.
-
-    return nullptr;
+    auto pipeline = new Pipeline(gst_pipeline);
+    pipeline->addWatcher(&PipelineFactory::defaultMessageHandler );
+    return pipeline;
 }
 
-gboolean Pipeline::handleErrorMessage(GstBus* bus, GstMessage* msg, gpointer data)
+gboolean PipelineFactory::defaultMessageHandler(GstBus* bus, GstMessage* message, gpointer ptr)
 {
-    GError* err;
-    gchar* debug;
-
-    gst_message_parse_error(msg, &err, &debug);
-    g_printerr("[ERROR] %s\n", err->message);
-    g_error_free(err);
-    g_free(debug);
-
-    return FALSE;
-}
-gboolean Pipeline::handleWarningMessage(GstBus* bus, GstMessage* msg, gpointer data)
-{
-    return TRUE;
-}
-gboolean Pipeline::handleInfoMessage(GstBus* bus, GstMessage* msg, gpointer data)
-{
-    return TRUE;
-}
-
-gboolean Pipeline::togglePlay()
-{
-    if(m_pipeline)
-        return gst_element_set_state(GST_ELEMENT( m_pipeline ), GST_STATE_PLAYING);
-    return false;
-}
-
-Element* Pipeline::createElement(const gchar* name)
-{
-    auto factory = gst_element_factory_find(name);
-    auto element = gst_element_factory_create(factory, name);
+    gchar  *debug;
+    GError *error;
     
-    if(gst_bin_add(GST_BIN ( m_pipeline ), element))
-        return new Element(element);
-    return nullptr;
-}
+    switch(GST_MESSAGE_TYPE(message)){
+    case GST_MESSAGE_ERROR: 
 
-std::unique_ptr<GstIterator, GstIteratorFreeFunction> Pipeline::getElementsSorted()
-{
-    return std::unique_ptr<GstIterator, GstIteratorFreeFunction>(gst_bin_iterate_sorted(GST_BIN( m_pipeline )), gst_iterator_free);
-}
+        gst_message_parse_error (message, &error, &debug);
+        g_free (debug);
 
-bool Pipeline::isEmpty() const
-{
-    return GST_BIN_NUMCHILDREN( m_pipeline ) == 0;
+        g_printerr ("Error: %s\n", error->message);
+        g_error_free (error);
+
+        break;
+    case GST_MESSAGE_WARNING:
+        gst_message_parse_warning (message, &error, &debug);
+        g_free (debug);
+
+        g_print ("Warning: %s\n", error->message);
+        g_error_free (error);
+
+        break;
+    case GST_MESSAGE_INFO:
+        gst_message_parse_info (message, &error, &debug);
+        g_free (debug);
+
+        g_print ("Info: %s\n", error->message);
+        g_error_free (error);
+
+        break;
+    case GST_MESSAGE_STATE_CHANGED:
+        GstState old_state, new_state;
+
+        gst_message_parse_state_changed (message, &old_state, &new_state, NULL);
+        g_print ("Element %s changed state from %s to %s.\n",
+            GST_OBJECT_NAME (message->src),
+            gst_element_state_get_name (old_state),
+            gst_element_state_get_name (new_state));
+
+        break;
+    default:
+        break;
+    }
+    return true;
 }
