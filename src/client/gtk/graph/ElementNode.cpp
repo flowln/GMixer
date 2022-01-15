@@ -20,6 +20,11 @@ ElementNode* ElementNode::create(GraphViewer* parent, const gchar* element_name,
     return ElementNode::create(parent, new Element(element_name), x, y);
 }
 
+ElementNode::~ElementNode()
+{
+    m_properties->destroy();
+}
+
 ElementNode::ElementNode(GraphViewer* parent, Element* element, int x, int y)
     : Node(parent, element->getName(), x, y)
     , m_element(element)
@@ -61,6 +66,9 @@ bool ElementNode::operator==(Element* elem)
 
 PropertyList* ElementNode::getProperties() 
 {
+    if(m_properties)
+        return m_properties;
+
     auto ptr = new PropertyList();
     ptr->add(&m_name);
 
@@ -107,6 +115,7 @@ PropertyList* ElementNode::getProperties()
 
     g_free(props);
 
+    m_properties = ptr;
     return ptr;
 }
 bool ElementNode::updateProperty(Property* property, const std::string& updated_field, const std::string& updated_value)

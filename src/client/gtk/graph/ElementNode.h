@@ -12,6 +12,8 @@ class ElementNode : public Node {
         static ElementNode* create(GraphViewer* parent, Element* element, int x, int y);
         static ElementNode* create(GraphViewer* parent, const gchar* element_name, int x, int y);
 
+        ~ElementNode();
+
         void updateNode();
 
         bool operator==(Element*);
@@ -27,4 +29,5 @@ class ElementNode : public Node {
     
     private:
         Element* m_element;
+        GMixer::PropertyList* m_properties = nullptr;
 };

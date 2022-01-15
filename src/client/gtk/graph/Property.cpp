@@ -5,13 +5,17 @@ using namespace GMixer;
 void Property::addField(const std::string& name, const std::string& property, GType type)
 {
     field pair {type, property};
-    properties.insert({name, pair});
+    try{
+        properties.at(name) = pair;
+    } catch(const std::out_of_range& oor){
+        if(!properties.emplace(name, pair).second)
+            printf("Could not insert field %s in property %s\n", name.c_str(), getName().c_str());
+    }
 }
-void Property::updateField(const std::string& name, const std::string& new_value)
+void Property::updateField(std::string&& name, const std::string& new_value)
 {
-    field pair {getType(name), new_value};
     if(!signal_property_update.empty() && signal_property_update(this, name, new_value))
-        properties.insert({name, pair});
+        addField(name, new_value, getType(name));
 }
 
 GType Property::getType(const std::string& name) const
@@ -23,7 +27,7 @@ GType Property::getType(const std::string& name) const
     }
 }
 
-const std::string Property::getField(const std::string& name) const
+const std::string Property::getField(std::string&& name) const
 {
     try{
         return properties.at(name).second;

@@ -41,9 +41,9 @@ public:
     }
 
     void addField(const std::string& name, const std::string& property, GType type);
-    void updateField(const std::string& name, const std::string& new_value);
+    void updateField(std::string&& name, const std::string& new_value);
     GType getType(const std::string& name) const;
-    const std::string getField(const std::string& name) const;
+    const std::string getField(std::string&& name) const;
     const Glib::ustring getName() const { return name; };
 };
 

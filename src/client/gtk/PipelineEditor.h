@@ -47,7 +47,6 @@ class ElementPropertyEditor : public Gtk::ScrolledWindow {
 
         Gtk::ListBox* m_properties = nullptr;
         Node* m_hooked_node = nullptr;
-        GMixer::PropertyList* m_hooked_properties = nullptr;
 };
 
 class PipelineEditor : public Gtk::Paned {

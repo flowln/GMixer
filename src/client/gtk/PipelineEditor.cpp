@@ -74,8 +74,6 @@ void ElementPropertyEditor::hook(Node* node)
     if(m_hooked_node == node)
         return;
 
-    if(m_hooked_properties)
-        m_hooked_properties->destroy();
     m_hooked_node = node;
     
     Gtk::Widget* widg;
@@ -88,8 +86,8 @@ void ElementPropertyEditor::hook(Node* node)
     
     m_properties->append(*Gtk::make_managed<Gtk::Label>(Glib::ustring::sprintf("Properties of %s", node->getName().c_str())));
     try{
-        m_hooked_properties = node->getProperties();
-        for(auto prop : *m_hooked_properties){
+        auto properties = node->getProperties();
+        for(auto prop : *properties){
             m_properties->append(*createWidget(prop));
         }
     } catch(const std::exception& ex){
@@ -99,27 +97,38 @@ void ElementPropertyEditor::hook(Node* node)
 Gtk::Box* ElementPropertyEditor::createWidget(GMixer::Property* prop)
 {
     auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
-    box->set_spacing(5);
+    box->set_spacing(8);
 
-    auto name = Gtk::make_managed<Gtk::Label>(prop->getName());
+    auto name = Gtk::make_managed<Gtk::Label>();
+    name->set_markup(Glib::ustring::sprintf("<i>%s</i>", prop->getName()));
     name->set_tooltip_text(prop->getField("desc"));
 
+    auto default_value = prop->getField("default");
+    auto default_type = prop->getType("default");
+    auto value = prop->getField("value");
+
     auto entry = Gtk::make_managed<Gtk::Entry>();
-    auto def = prop->getField("default");
-    auto def_type = prop->getType("default");
-    entry->set_placeholder_text(def);
-    entry->set_tooltip_text(Glib::ustring::sprintf("Format: %s\t\tDefault: %s", g_type_name(def_type), def)); 
+    entry->set_hexpand(true);
+    if(!value.empty())
+        entry->set_text(value);
+    entry->set_placeholder_text(default_value);
+    entry->set_tooltip_text(Glib::ustring::sprintf("Format: %s\t\tDefault: %s", g_type_name(default_type), default_value)); 
 
     auto confirm_button = Gtk::make_managed<Gtk::Button>("Confirm");
     confirm_button->set_sensitive(false);
 
     entry->signal_changed().connect(
-        [confirm_button, entry](){ 
-            confirm_button->set_sensitive(entry->get_text_length() != 0); 
+        [confirm_button, entry, prop](){ 
+            auto value = prop->getField("value");
+            if(value.empty())
+                confirm_button->set_sensitive(entry->get_text_length() != 0);
+            else
+                confirm_button->set_sensitive(std::string(entry->get_text()) != value); 
         });
     confirm_button->signal_clicked().connect(
-        [entry, prop]{
+        [confirm_button, entry, prop]{
             prop->updateField("value", entry->get_text());
+            confirm_button->set_sensitive(false);
         });
 
     box->append(*name);
