@@ -18,8 +18,12 @@ On Linux, so the following to build the project in release mode:
 You will end up with a `gmixer` file in the build directory. To install it on your system, you can either copy the binary to `/usr/bin` (or other folter in your PATH variable), or you can do `meson install` right after the `ninja` command. 
 
 ## TODO
+- Documentation!!!
 - Save pipeline to file
 - Handle ghost bins (e.g. decodebin's source pads)
+- Allow creating more pads when possible
+- Show pad caps on the graph
+- Check caps when trying to link two pads (and tell the user when it's not possible to link two pads)
 - Add keyboard shortcuts (quit, save, import, select node, move node, etc)
 - Specialize property edit fields (e.g. checkbox for gboolean properties)
 - Improve graph visuals
