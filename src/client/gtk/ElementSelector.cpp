@@ -143,6 +143,7 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
 {
     auto source_page = Gtk::make_managed<Gtk::Paned>();
     source_page->set_resize_end_child(false);
+    source_page->set_size_request(160, 280);
 
     auto source_list = Gtk::make_managed<ElementList>(ElementType::SOURCE);
     source_list->append_column("Element", source_list->getModelRecord().m_element_name);
@@ -158,6 +159,7 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
 
     auto filter_page = Gtk::make_managed<Gtk::Paned>();
     filter_page->set_resize_end_child(false);
+    filter_page->set_size_request(160, 280);
 
     auto filter_list = Gtk::make_managed<ElementList>(ElementType::FILTER);
     filter_list->append_column("Element", filter_list->getModelRecord().m_element_name);
@@ -173,6 +175,7 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
 
     auto sink_page = Gtk::make_managed<Gtk::Paned>();
     sink_page->set_resize_end_child(false);
+    sink_page->set_size_request(160, 280);
 
     auto sink_list   = Gtk::make_managed<ElementList>(ElementType::SINK);
     sink_list->append_column("Element", sink_list->getModelRecord().m_element_name);
@@ -191,7 +194,6 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
     auto sink_tab_name   = Gtk::make_managed<Gtk::Label>("Sinks");
 
     m_notebook.set_hexpand(true);
-    m_notebook.set_size_request(120, 280);
 
     m_notebook.insert_page(*source_page, *source_tab_name, 0);
     m_notebook.insert_page(*filter_page, *filter_tab_name, 1);
@@ -216,7 +218,6 @@ ElementSelector::ElementSelector(Gtk::Window* main_window)
         }); 
 
     source_list->getModel().populate();
-    source_page->set_position(source_page->get_width()/2);
 }
 
 Glib::ustring ElementSelector::getSelectedElement()

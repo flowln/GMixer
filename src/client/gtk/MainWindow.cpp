@@ -12,6 +12,7 @@ MainWindow::MainWindow()
 { 
     set_title("GMixer");
     set_size_request(750, 500);
+
     set_titlebar(*HeaderBar::create());
 
     //m_main_container.set_row_homogeneous(true);
