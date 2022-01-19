@@ -9,7 +9,8 @@
 #include <sigc++/functors/ptr_fun.h>
 
 #define MEDIA_RESUME_ICON_NAME "media-playback-start-symbolic"
-#define MEDIA_PAUSE_ICON_NAME "media-playback-stop-symbolic"
+#define MEDIA_PAUSE_ICON_NAME "media-playback-pause-symbolic"
+#define MEDIA_STOP_ICON_NAME "media-playback-stop-symbolic"
 
 HeaderBar* HeaderBar::s_instance = nullptr;
 
@@ -51,7 +52,7 @@ HeaderBar::HeaderBar()
         [&]{
             static bool is_playing = false;
             if(is_playing){
-                if(PipelineSelector::currentPipeline()->changeState(Pipeline::State::NIL))
+                if(PipelineSelector::currentPipeline()->changeState(Pipeline::State::PAUSED))
                 m_control_pipeline->set_image_from_icon_name(MEDIA_RESUME_ICON_NAME);
             }
             else{

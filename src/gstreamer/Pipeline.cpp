@@ -47,7 +47,7 @@ inline GstStateChange getChange(GstState bef, Pipeline::State aft)
 
 Pipeline::StateChangeResult Pipeline::changeState(Pipeline::State new_state)
 {
-    return static_cast<StateChangeResult>(gst_element_change_state(GST_ELEMENT(m_pipeline), ::getChange(GST_STATE(m_pipeline), new_state)));
+    return static_cast<StateChangeResult>(gst_element_set_state(GST_ELEMENT(m_pipeline), static_cast<GstState>(new_state)));
 }
 
 Pipeline::State Pipeline::currentState() const
@@ -104,23 +104,24 @@ Pipeline* PipelineFactory::createFromString(Glib::ustring&& name, const gchar* r
 Pipeline* PipelineFactory::wrapBasePipeline(GstPipeline* gst_pipeline)
 {
     auto pipeline = new Pipeline(gst_pipeline);
-    pipeline->addWatcher(&PipelineFactory::defaultMessageHandler );
+    pipeline->addWatcher(&PipelineFactory::defaultMessageHandler);
     return pipeline;
 }
 
 gboolean PipelineFactory::defaultMessageHandler(GstBus* bus, GstMessage* message, gpointer ptr)
 {
-    gchar  *debug;
-    GError *error;
+    gchar*  debug;
+    GError* error;
     
     switch(GST_MESSAGE_TYPE(message)){
     case GST_MESSAGE_ERROR: 
-
         gst_message_parse_error (message, &error, &debug);
-        g_free (debug);
 
         g_printerr ("Error: %s\n", error->message);
+        g_printerr ("\tDebugging info: %s\n", (debug) ? debug : "none");
+
         g_error_free (error);
+        g_free (debug);
 
         break;
     case GST_MESSAGE_WARNING:
@@ -143,10 +144,6 @@ gboolean PipelineFactory::defaultMessageHandler(GstBus* bus, GstMessage* message
         GstState old_state, new_state;
 
         gst_message_parse_state_changed (message, &old_state, &new_state, NULL);
-        g_print ("Element %s changed state from %s to %s.\n",
-            GST_OBJECT_NAME (message->src),
-            gst_element_state_get_name (old_state),
-            gst_element_state_get_name (new_state));
 
         break;
     default:
