@@ -13,12 +13,15 @@ class Pad {
         bool operator==(GstPad*);
         GstPad* getBase() const { return m_base; }
 
-        void draw(const Cairo::RefPtr<Cairo::Context>& cr);
+        void draw(const Cairo::RefPtr<Cairo::Context>& cr, bool is_mouse_over = false);
 
-        void setPosition(double x, double y) { m_last_x = x; m_last_y = y; }
-        void setSize(double w, double h) { m_last_width = w; m_last_height = h; }
-        double lastX() const { return m_last_x; }
-        double lastY() const { return m_last_y; }
+        void setPosition(double x, double y) { m_x = x; m_y = y; }
+        void setSize(double w, double h) { m_width = w; m_height = h; }
+        double lastX() const { return m_x; }
+        double lastY() const { return m_y; }
+        double lastWidth() const { return m_width; }
+        double lastHeight() const { return m_height; }
+        bool contains(double x, double y) const;
 
         void stageLinking() { m_staging_link = true; }
         void cancelLinking() { m_staging_link = false; }
@@ -33,8 +36,8 @@ class Pad {
         Pad* getPeerOfBase();
 
     protected:
-        double m_last_x = 0, m_last_y = 0;
-        double m_last_width = 0, m_last_height = 0;
+        double m_x = 0, m_y = 0;
+        double m_width = 0, m_height = 0;
         bool m_staging_link = false;
 
         Node* m_parent;

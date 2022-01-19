@@ -76,7 +76,7 @@ PropertyList* ElementNode::getProperties()
     auto props = m_element->getProperties(&num_props);
     for(guint i = 0; i < num_props; i++){
         auto prop = props[i];
-        auto property = new Property(g_param_spec_get_name(prop), true);
+        auto property = new GMixer::Property(g_param_spec_get_name(prop), true);
 
         property->addField("desc", g_param_spec_get_blurb(prop), G_TYPE_STRING);
 
@@ -118,7 +118,7 @@ PropertyList* ElementNode::getProperties()
     m_properties = ptr;
     return ptr;
 }
-bool ElementNode::updateProperty(Property* property, const std::string& updated_field, const std::string& updated_value)
+bool ElementNode::updateProperty(GMixer::Property* property, const std::string& updated_field, const std::string& updated_value)
 {
     printf("Property %s was updated: %s = %s\n", property->getName().c_str(), updated_field.c_str(), updated_value.c_str());
     g_object_set(m_element->getBase(), property->getName().c_str(), updated_value.c_str(), NULL);

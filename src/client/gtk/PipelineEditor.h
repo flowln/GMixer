@@ -8,6 +8,7 @@
 #include <gtkmm/listbox.h>
 #include <gtkmm/button.h>
 #include <gtkmm/scrolledwindow.h>
+#include <gtkmm/togglebutton.h>
 
 // Forward-declarations
 class Pipeline;
@@ -28,6 +29,7 @@ class PipelineGraph : public Gtk::Box {
 
         void addElement(Element*);
         OperationMode getMode() const { return m_mode; };
+        void setMode(OperationMode new_mode);
 
     private:
         OperationMode m_mode;
@@ -35,6 +37,10 @@ class PipelineGraph : public Gtk::Box {
 
         GraphViewer* m_viewer;
         Gtk::ActionBar* m_bar;
+
+        Gtk::ToggleButton* m_mode_select;
+        Gtk::ToggleButton* m_mode_move;
+        Gtk::ToggleButton* m_mode_cut;
 };
 
 class ElementPropertyEditor : public Gtk::ScrolledWindow {

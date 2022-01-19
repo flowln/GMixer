@@ -14,31 +14,49 @@ bool Pad::operator==(GstPad* pad)
     return m_base == pad;
 }
 
-void Pad::draw(const Cairo::RefPtr<Cairo::Context>& cr)
+void Pad::draw(const Cairo::RefPtr<Cairo::Context>& cr, bool is_mouse_over)
 {
     cr->save();
+    cr->save();
 
-    cr->set_source_rgba(0.1, 0.1, 0.1, 1.0);
-    cr->rectangle(m_last_x - m_last_width / 2, m_last_y - m_last_height / 2, m_last_width, m_last_height);
+    cr->translate(m_x, m_y);
+    cr->scale(m_width, m_height);
+
+    if(is_mouse_over){
+        cr->set_source_rgba(0.2, 0.2, 0.2, 1.0);
+    }
+    else{
+        cr->set_source_rgba(0.1, 0.1, 0.1, 1.0);
+    }
+    cr->rectangle(0, 0, 1, 1);
     cr->fill();
+    cr->restore();
+
     if(m_staging_link){
         cr->set_source_rgba(0.1, 0.1, 0.1, 0.8);
         std::vector<double> dashes = {10.0};
         cr->set_dash(dashes, 0);
 
-        cr->move_to(m_last_x, m_last_y);
+        cr->move_to(m_x + m_width / 2, m_y + m_height / 2);
         cr->line_to(GraphViewer::cursor_pos_x, GraphViewer::cursor_pos_y);
         cr->stroke();
     }
     if(isLinked() && m_initiator){
         cr->set_source_rgba(0.1, 0.1, 0.1, 1.0);
 
-        cr->move_to(m_last_x, m_last_y);
-        cr->line_to(m_peer->lastX(), m_peer->lastY());
+        cr->move_to(m_x + m_width / 2, m_y + m_height / 2);
+        cr->line_to(m_peer->lastX() + m_peer->lastWidth() / 2, m_peer->lastY() + m_peer->lastHeight() / 2);
         cr->stroke();
     }
 
     cr->restore();
+
+}
+
+bool Pad::contains(double x, double y) const
+{
+    return  (x >= m_x && x <= m_x + m_width) && 
+            (y >= m_y && y <= m_y + m_height);
 }
 
 Pad* Pad::getPeerOfBase()

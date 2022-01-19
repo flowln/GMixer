@@ -2,6 +2,7 @@
 
 #include "client/gtk/graph/Property.h"
 
+#include <gtkmm/widget.h>
 #include <glibmm/ustring.h>
 #include <cairomm/cairomm.h>
 #include <forward_list>

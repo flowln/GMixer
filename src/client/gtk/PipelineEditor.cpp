@@ -9,7 +9,7 @@
 #include "client/gtk/graph/GraphViewer.h"
 
 #include <gtkmm/entry.h>
-#include <gtkmm/togglebutton.h>
+#include <gtkmm/eventcontrollerkey.h>
 #include <gtkmm/label.h>
 #include <gtkmm/listbox.h>
 
@@ -25,37 +25,81 @@ PipelineGraph::PipelineGraph(PipelineEditor* parent)
     m_bar = Gtk::make_managed<Gtk::ActionBar>();
     m_viewer = Gtk::make_managed<GraphViewer>(this);
 
-    auto mode_select = Gtk::make_managed<Gtk::ToggleButton>("Select");
-    mode_select->set_image_from_icon_name("edit-select");
-    auto mode_move = Gtk::make_managed<Gtk::ToggleButton>("Move");
-    mode_move->set_image_from_icon_name("fitbest");
-    auto mode_cut = Gtk::make_managed<Gtk::ToggleButton>("Cut");
-    mode_cut->set_image_from_icon_name("edit-cut-symbolic");
+    m_mode_select = Gtk::make_managed<Gtk::ToggleButton>("Select");
+    m_mode_select->set_image_from_icon_name("edit-select");
+    m_mode_select->set_tooltip_text("Select node or link");
 
-    mode_select->set_active(true);
-    mode_move->set_group(*mode_select);
-    mode_cut->set_group(*mode_select);
+    m_mode_move = Gtk::make_managed<Gtk::ToggleButton>("Move");
+    m_mode_move->set_image_from_icon_name("fitbest");
+    m_mode_move->set_tooltip_text("Move node");
 
-    mode_select->signal_clicked().connect([this]{ m_mode = OperationMode::MODE_SELECT; });
-    mode_move->signal_clicked().connect([this]{ m_mode= OperationMode::MODE_MOVE; });
-    mode_cut->signal_clicked().connect([this]{ m_mode= OperationMode::MODE_CUT; });
+    m_mode_cut = Gtk::make_managed<Gtk::ToggleButton>("Cut");
+    m_mode_cut->set_image_from_icon_name("edit-cut-symbolic");
+    m_mode_cut->set_tooltip_text("Cut existing links");
+
+    m_mode_select->set_active(true);
+    m_mode_move->set_group(*m_mode_select);
+    m_mode_cut->set_group(*m_mode_select);
+
+    m_mode_select->signal_clicked().connect([this]{ setMode(OperationMode::MODE_SELECT); });
+    m_mode_move->signal_clicked().connect([this]{ setMode(OperationMode::MODE_MOVE); });
+    m_mode_cut->signal_clicked().connect([this]{ setMode(OperationMode::MODE_CUT); });
 
     auto tip = Gtk::make_managed<Gtk::Label>("To add an element to the pipeline, select it in the list below and click the 'Add' button.");
     tip->set_ellipsize(Pango::EllipsizeMode::END);
 
-    m_bar->pack_start(*mode_select);
-    m_bar->pack_start(*mode_move);
-    m_bar->pack_start(*mode_cut);
+    m_bar->pack_start(*m_mode_select);
+    m_bar->pack_start(*m_mode_move);
+    m_bar->pack_start(*m_mode_cut);
     m_bar->pack_end(*tip);
 
     append(*m_viewer);
     append(*m_bar);
 
+    // Sets up keyboard shortcuts
+    // Return to previous mode when key is released
+    static OperationMode last_mode;
+    
+    auto key_controller = Gtk::EventControllerKey::create();
+    key_controller->signal_key_pressed().connect(
+        [&](guint keyval, guint keycode, Gdk::ModifierType state){
+            if(keyval == GDK_KEY_Control_L){
+                last_mode = m_mode;
+                setMode(OperationMode::MODE_MOVE);
+            }
+           return true; 
+        }, false);
+    key_controller->signal_key_released().connect(
+        [&](guint keyval, guint keycode, Gdk::ModifierType state){
+            if(keyval == GDK_KEY_Control_L){
+                setMode(last_mode);
+            }
+        }, false);
+
+    add_controller(key_controller);
 }
 
 void PipelineGraph::addElement(Element* element)
 {
     m_viewer->addNode(ElementNode::create(m_viewer, element, 0, 0));
+}
+
+void PipelineGraph::setMode(OperationMode new_mode)
+{
+    static auto move_cursor = Gdk::Cursor::create("move");
+
+    m_mode = new_mode;
+    switch(new_mode){
+    case OperationMode::MODE_SELECT:
+        set_cursor("grab");
+        break;
+    case OperationMode::MODE_MOVE:
+        set_cursor(move_cursor);
+        break;
+    case OperationMode::MODE_CUT:
+        set_cursor();
+        break;
+    }
 }
 
 ElementPropertyEditor::ElementPropertyEditor(Gtk::Widget& parent)

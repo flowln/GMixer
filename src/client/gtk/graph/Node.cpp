@@ -69,22 +69,29 @@ void Node::onClick(double x, double y)
 {
     select();
 
-    if(x <= m_x + 0.1*m_width){
-        InputPad* closest = m_input_pads.at(0);
+    Pad* selected = nullptr;
+
+    if(x <= m_x + node_to_pad_width*m_width){
         for(auto in : m_input_pads){
-            closest = (closest->lastY() - y) < (in->lastY() - y) ? closest : in;
+            if(!in->contains(x, y)) continue;
+
+            selected = in;
+            break;
         }
-        closest->stageLinking();
-        m_selected_pad = closest;
+
     }
-    else if(x >= m_x + 0.9*m_width){
-        OutputPad* closest = m_output_pads.at(0);
+    else if(x >= m_x + (1-node_to_pad_width)*m_width){
         for(auto out : m_output_pads){
-            closest = (closest->lastY() - y) < (out->lastY() - y) ? closest : out;
+            if(!out->contains(x, y)) continue;
+            
+            selected = out;
+            break;
         }
-        closest->stageLinking();
-        m_selected_pad = closest;
     }
+    if(!selected)
+        return;
+    selected->stageLinking();
+    m_selected_pad = selected;
 }
 
 void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
@@ -102,11 +109,11 @@ void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
     
     if(numOfInputs() > 0){
         for(auto in : m_input_pads)
-            in->draw(cr);
+            in->draw(cr, in->contains(m_parent->cursor_pos_x, m_parent->cursor_pos_y));
     }
     if(numOfOutputs() > 0){
         for(auto out : m_output_pads)
-            out->draw(cr);
+            out->draw(cr, out->contains(m_parent->cursor_pos_x, m_parent->cursor_pos_y));
     }
 
     cr->save();    // Pre-border
@@ -156,7 +163,7 @@ void Node::updateInputPadGeometry(InputPad* pad, int start_index)
     double step = m_height / (numOfInputs() + 1);
     int i = start_index >= 0 ? start_index : numOfInputs() - 1;
     for(; i >= 0; i--) if(m_input_pads.at(i) == pad) break;
-    pad->setPosition(m_x + m_width * node_to_pad_width / 2, m_y + (i+1)*step);
+    pad->setPosition(m_x, m_y + (i+1)*step - m_height * node_to_pad_height / 2);
 }
 void Node::updateOutputPadGeometry(OutputPad* pad, int start_index)
 {
@@ -165,7 +172,7 @@ void Node::updateOutputPadGeometry(OutputPad* pad, int start_index)
     double step = m_height / (numOfOutputs() + 1);
     int i = start_index >= 0 ? start_index : numOfOutputs() - 1;
     for(; i >= 0; i--) if(m_output_pads.at(i) == pad) break;
-    pad->setPosition(m_x + m_width - m_width * node_to_pad_width / 2, m_y + (i+1)*step);
+    pad->setPosition(m_x + m_width - m_width * node_to_pad_width, m_y + (i+1)*step - m_height * node_to_pad_height / 2);
 }
 
 inline void Node::drawName(const Cairo::RefPtr<Cairo::Context>& cr) const
