@@ -120,10 +120,74 @@ PropertyList* ElementNode::getProperties()
     m_properties = ptr;
     return ptr;
 }
-bool ElementNode::updateProperty(GMixer::Property* property, const std::string& updated_field, const std::string& updated_value)
+
+template <typename T>
+void updateViaSscanf(const char* fmt, GstElement* base, const char* name, const char* value)
 {
-    printf("Property %s was updated: %s = %s\n", property->getName().c_str(), updated_field.c_str(), updated_value.c_str());
-    g_object_set(m_element->getBase(), property->getName().c_str(), updated_value.c_str(), NULL);
+    T x;
+    sscanf(value, fmt, &x);
+    g_object_set(base, name, x, NULL);
+}
+template <>
+void updateViaSscanf<double>(const char* fmt, GstElement* base, const char* name, const char* value)
+{
+    double x;
+    sscanf(value, fmt, &x);
+    printf("Str: %s | Double: %lf\n", value, x);
+    g_object_set(base, name, x, NULL);
+}
+
+/** Compares two c strings, case-insensitive. 
+ *  Only returns true/false for whether they are equal or not.*/
+inline bool compareCaseInsensitive(const char* s1, const char* s2)
+{
+    int i = 0;
+    while(s1[i] && s2[i]){
+        if(tolower(s1[i]) != tolower(s2[i]))
+            return false;
+    }
+    return true;
+}
+
+bool ElementNode::updateProperty(GMixer::Property* property, const std::string& field, const std::string& value)
+{
+    switch(property->getType(field)){
+        case G_TYPE_STRING:
+            g_object_set(m_element->getBase(), property->getName().c_str(), value.c_str(), NULL);
+            break;
+        case G_TYPE_INT:
+            updateViaSscanf<int>("%d", m_element->getBase(), property->getName().c_str(), value.c_str());
+            break;
+        case G_TYPE_INT64:
+            updateViaSscanf<long long>("%Ld", m_element->getBase(), property->getName().c_str(), value.c_str());
+            break;
+        case G_TYPE_UINT:
+            updateViaSscanf<unsigned int>("%u", m_element->getBase(), property->getName().c_str(), value.c_str());
+            break;
+        case G_TYPE_UINT64:
+            updateViaSscanf<unsigned long long>("%Lu", m_element->getBase(), property->getName().c_str(), value.c_str());
+            break;
+        case G_TYPE_LONG:
+            updateViaSscanf<long>("%ld", m_element->getBase(), property->getName().c_str(), value.c_str());
+            break;
+        case G_TYPE_ULONG:
+            updateViaSscanf<unsigned long>("%lu", m_element->getBase(), property->getName().c_str(), value.c_str());
+            break;
+        case G_TYPE_FLOAT:
+            updateViaSscanf<float>("%f", m_element->getBase(), property->getName().c_str(), value.c_str());
+            break;
+        case G_TYPE_DOUBLE:
+            updateViaSscanf<double>("%lf", m_element->getBase(), property->getName().c_str(), value.c_str());
+            break;
+        case G_TYPE_BOOLEAN:
+            g_object_set(m_element->getBase(), property->getName().c_str(), 
+                    value != "0" && !compareCaseInsensitive(value.c_str(), "false"), NULL);
+            break;
+        default:
+            g_printerr("[ERROR] This type is not yet implemented. Value will not be set.");
+            return false;
+    }
+
     return true;
 }
 

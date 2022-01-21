@@ -23,6 +23,8 @@ GType Property::getType(const std::string& name) const
     try{
         return properties.at(name).first;
     } catch(const std::out_of_range& oor){
+        if(properties.find("default") != properties.end())
+            return properties.at("default").first;
         return {};
     }
 }
