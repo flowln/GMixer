@@ -10,7 +10,18 @@ using namespace GMixer;
 
 void Node::deselect()
 { 
+    if(!m_is_selected)
+        return;
     m_is_selected = false; 
+    stopLinking();
+
+    update_callback();
+}
+void Node::stopLinking()
+{
+    if(!m_selected_pad)
+        return;
+
     m_selected_pad = nullptr;
 
     for(int i = numOfInputs() - 1; i >= 0; i--)
@@ -22,6 +33,8 @@ void Node::select()
 { 
     m_is_selected = true; 
     Signals::node_selected().emit(this);
+
+    update_callback();
 }
 
 PropertyList* Node::getProperties() 
@@ -31,7 +44,7 @@ PropertyList* Node::getProperties()
     return ptr;
 }
 
-Node::Node(GraphViewer* parent, Glib::ustring name, int x, int y)
+Node::Node(GraphViewer* parent, Glib::ustring name, double x, double y)
     : m_parent(parent)
     , m_name(name)
 {
@@ -39,7 +52,7 @@ Node::Node(GraphViewer* parent, Glib::ustring name, int x, int y)
     setPosition(x, y);
 }
 
-void Node::setPosition(int new_x, int new_y)
+void Node::setPosition(double new_x, double new_y)
 {
     m_x = new_x;
     m_y = new_y;
@@ -67,10 +80,9 @@ void Node::addOutputPad(OutputPad* pad)
 
 void Node::onClick(double x, double y)
 {
-    select();
-
     Pad* selected = nullptr;
 
+    // Check if one input pad was clicked
     if(x <= m_x + node_to_pad_width*m_width){
         for(auto in : m_input_pads){
             if(!in->contains(x, y)) continue;
@@ -78,8 +90,9 @@ void Node::onClick(double x, double y)
             selected = in;
             break;
         }
-
     }
+
+    // Check if one output pad was clicked
     else if(x >= m_x + (1-node_to_pad_width)*m_width){
         for(auto out : m_output_pads){
             if(!out->contains(x, y)) continue;
@@ -88,8 +101,13 @@ void Node::onClick(double x, double y)
             break;
         }
     }
-    if(!selected)
+
+    // If no pad was clicked
+    if(!selected){
+        select();
         return;
+    }
+
     selected->stageLinking();
     m_selected_pad = selected;
 }

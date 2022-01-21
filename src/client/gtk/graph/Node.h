@@ -13,38 +13,91 @@ class Pad;
 class InputPad;
 class OutputPad;
 
+/** This class represents a node in a graph.
+ *  Such entity has a descriptive name and a coordinate in the graph
+ *  it belongs to, as well as a width and a height. By default it is
+ *  drawn as a rectangle, with the top-left corner as (0,0).
+ *  It relates to other nodes via input and/or output pads.
+ *  */
 class Node {
     public:
-        Node(GraphViewer* parent, Glib::ustring name, int x, int y);
+        Node(GraphViewer* parent, Glib::ustring name, double x, double y);
         virtual ~Node() = default;
 
-        void setPosition(int new_x, int new_y);
+        /** Set new position of the node, update its pads and update the node. */
+        void setPosition(double new_x, double new_y);
 
+        double getX() const { return m_x; }
+        double getY() const { return m_y; }
+
+        /** Set new size of the node, update its pads and update the node. */
+        void setSize(double new_width, double new_height);
+
+        double getWidth() const { return m_width; }
+        double getHeight() const { return m_height; }
+
+        /** Add an input pad to the node's inputs.
+         *  Also automatically updates all the current 
+         *  inputs geometries to accomodate the new one. */
         void addInputPad(InputPad* pad);
+
+        /** Add an output pad to the node's outputs.
+         *  Also automatically updates all the current 
+         *  outputs geometries to accomodate the new one. */
         void addOutputPad(OutputPad* pad);
+
+        /* Get the vector of the node's input pads. */
         std::vector<InputPad*>& getInputPads() { return m_input_pads; };
+
+        /* Get the vector of the node's output pads. */
         std::vector<OutputPad*>& getOutputPads() { return m_output_pads; };
+
         Pad* selectedPad() const { return m_selected_pad; }
 
+        /** Set a callback for when the node is updated. 
+         *  The node is updated when:
+         *      - It is selected / deselected.
+         *      - It's geometry changes (position or size).
+         *  */
         void onUpdateCallback(sigc::slot<void(void)> cb) { update_callback = cb; };
+
+        /** Respond to a click event inside of the node at coordinate (x,y).
+         *  Possible outcomes are:
+         *      - A pad was clicked. In this case it will start / finish linking.
+         *      - No pad was clicked. In this case the node will become selected.
+         *
+         *  This function assumes the (x,y) is already inside the node's boundaries.
+         *  If (x,y) is outside on the node, the node will simply be selected as if was clicked outside of a pad.*/
         void onClick(double x, double y);
 
+        /** Checks if (x,y) is inside the node's boundaries. */
+        bool contains(double x, double y) const;
+
+        /** Draws the node and tell all its pads to draw themselves (thorough their draw() interface). */
         void draw(const Cairo::RefPtr<Cairo::Context>& cr) const;
-        bool isSelected() const { return m_is_selected; }
-        void select();
+
+        /** Deselects a node. If it was not selected, this does nothing. */
         void deselect();
 
+        /** Stop linking if it has a linking pad. Does nothing otherwise. */
+        void stopLinking();
+
+        bool isSelected() const { return m_is_selected; }
+
         Glib::ustring getName() const { return m_name.getName(); }
-        int getX() const { return m_x; }
-        int getY() const { return m_y; }
         GraphViewer* getGraph() const { return m_parent; }
+
+        /** Get all the node's properties.
+         *  While the base Node only has a 'name' property, children of 
+         *  the Node class can have as many properties as they want.
+         *  */
         virtual GMixer::PropertyList* getProperties();
         virtual bool updateProperty(GMixer::Property*, const std::string&, const std::string&){ return false; };
 
-        bool contains(double x, double y) const;
-
     protected:
-        void setSize(double new_width, double new_height);
+        /* To try to select a node, use onClick.*/
+        void select();
+
         void updateInputPadGeometry(InputPad*, int start_index = -1);
         void updateOutputPadGeometry(OutputPad*, int start_index = -1);
 
