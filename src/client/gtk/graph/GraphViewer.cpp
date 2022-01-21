@@ -98,16 +98,18 @@ void GraphViewer::pressedInSelectMode(unsigned int button, double x, double y)
     if(button == 1){ //Left click
         for(auto node : m_nodes){
             if(node->contains(x, y)){
-                node->onClick(x, y);
+                bool new_selection = node->onClick(x, y);
                
-                if(node->isSelected()){
+                if(new_selection){
                     if(m_selected_node)
                         m_selected_node->deselect();
                     m_selected_node = node;
                     Signals::node_selected().emit(node);
                 }
-                else{ // A pad was selected
+                else{ 
                     Pad* selected = node->selectedPad();
+                    if(!selected) break; // No pad was selected
+
                     if(selected != m_linking_pad && m_linking_pad){
                         m_linking_pad->link(selected);
                         m_linking_pad = nullptr;

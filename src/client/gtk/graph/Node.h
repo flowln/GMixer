@@ -49,12 +49,13 @@ class Node {
          *  outputs geometries to accomodate the new one. */
         void addOutputPad(OutputPad* pad);
 
-        /* Get the vector of the node's input pads. */
+        /** Get the vector of the node's input pads. */
         std::vector<InputPad*>& getInputPads() { return m_input_pads; };
 
-        /* Get the vector of the node's output pads. */
+        /** Get the vector of the node's output pads. */
         std::vector<OutputPad*>& getOutputPads() { return m_output_pads; };
 
+        /** Get the currently selected pad in the node, or nullptr if none is selected. */
         Pad* selectedPad() const { return m_selected_pad; }
 
         /** Set a callback for when the node is updated. 
@@ -66,12 +67,13 @@ class Node {
 
         /** Respond to a click event inside of the node at coordinate (x,y).
          *  Possible outcomes are:
-         *      - A pad was clicked. In this case it will start / finish linking.
-         *      - No pad was clicked. In this case the node will become selected.
+         *      - A pad was clicked. In this case it will start / finish linking and return false.
+         *      - No pad was clicked. In this case the node will become selected and return true 
+         *      only if it was not previously selected.
          *
          *  This function assumes the (x,y) is already inside the node's boundaries.
          *  If (x,y) is outside on the node, the node will simply be selected as if was clicked outside of a pad.*/
-        void onClick(double x, double y);
+        bool onClick(double x, double y);
 
         /** Checks if (x,y) is inside the node's boundaries. */
         bool contains(double x, double y) const;

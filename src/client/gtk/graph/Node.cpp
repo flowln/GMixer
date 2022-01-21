@@ -90,16 +90,16 @@ void Node::addOutputPad(OutputPad* pad)
         updateOutputPadGeometry(m_output_pads.at(i), i); 
 }
 
-void Node::onClick(double x, double y)
+bool Node::onClick(double x, double y)
 {
-    Pad* selected = nullptr;
+    Pad* selected_pad = nullptr;
 
     // Check if one input pad was clicked
     if(x <= m_x + node_to_pad_width*m_width){
         for(auto in : m_input_pads){
             if(!in->contains(x, y)) continue;
 
-            selected = in;
+            selected_pad = in;
             break;
         }
     }
@@ -109,19 +109,23 @@ void Node::onClick(double x, double y)
         for(auto out : m_output_pads){
             if(!out->contains(x, y)) continue;
             
-            selected = out;
+            selected_pad = out;
             break;
         }
     }
 
     // If no pad was clicked
-    if(!selected){
-        select();
-        return;
+    if(!selected_pad){
+        if(!isSelected()){
+            select();
+            return true;
+        }
+        return false;
     }
 
-    selected->stageLinking();
-    m_selected_pad = selected;
+    selected_pad->stageLinking();
+    m_selected_pad = selected_pad;
+    return false;
 }
 
 void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
