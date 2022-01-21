@@ -1,4 +1,5 @@
 #include "gstreamer/Element.h"
+#include "signals/Graph.h"
 #include "client/gtk/PipelineEditor.h"
 #include "client/gtk/graph/GraphViewer.h"
 #include "client/gtk/graph/Node.h"
@@ -96,34 +97,35 @@ void GraphViewer::pressed(int n, double x, double y)
     auto button = m_click_controller->get_current_button();
 
     if(button == 1){ //Left click
-        bool just_selected = false;
         for(auto node : m_nodes){
             if(node->contains(x, y)){
                 node->onClick(x, y);
-                if(m_selected_node && m_selected_node != node){
-                    if(m_selected_node->selectedPad()){
-                        node->selectedPad()->link(m_selected_node->selectedPad());
-                        node->deselect();
-                    }
-
-                    m_selected_node->deselect();
+               
+                if(node->isSelected()){
+                    if(m_selected_node)
+                        m_selected_node->deselect();
+                    m_selected_node = node;
+                    Signals::node_selected().emit(node);
                 }
-                m_selected_node = node;
-                just_selected = true;
+                else{ // A pad was selected
+                    Pad* selected = node->selectedPad();
+                    if(selected != m_linking_pad && m_linking_pad){
+                        m_linking_pad->link(selected);
+                        m_linking_pad = nullptr;
+                    }
+                    else
+                        m_linking_pad = selected;
+                }
 
                 break;
             }
         }
-        if(!just_selected && m_selected_node){
-            m_selected_node->deselect();
-            m_selected_node = nullptr;
-        }
     }
     else if(button == 3){ // Right click
-
         if(m_selected_node){
             m_selected_node->deselect();
             m_selected_node = nullptr;
+            Signals::node_selected().emit(nullptr);
         }
     }
 
@@ -133,6 +135,7 @@ void GraphViewer::beginDrag(double x, double y)
 {
     if(getMode() == OperationMode::MODE_MOVE){
         beginMoveOperation(x, y);
+        Signals::node_selected().emit(m_selected_node);
     }
     else if(getMode() == OperationMode::MODE_CUT){
         beginCutOperation(x, y);
@@ -172,7 +175,7 @@ void GraphViewer::beginMoveOperation(double x, double y)
     if(!m_selected_node)
         return; //TODO: Move viewport
 
-    m_selected_node->select();
+    m_selected_node->onClick(x, y);
     m_move_start_x = m_selected_node->getX();
     m_move_start_y = m_selected_node->getY();
     m_is_dragging = true;

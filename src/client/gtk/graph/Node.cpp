@@ -1,4 +1,3 @@
-#include "signals/Graph.h"
 #include "client/gtk/graph/Node.h"
 #include "client/gtk/graph/Pad.h"
 #include "client/gtk/graph/GraphViewer.h"
@@ -32,7 +31,6 @@ void Node::stopLinking()
 void Node::select()
 { 
     m_is_selected = true; 
-    Signals::node_selected().emit(this);
 
     update_callback();
 }

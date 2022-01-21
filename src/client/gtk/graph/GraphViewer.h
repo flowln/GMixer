@@ -11,6 +11,7 @@
 class ElementNode;
 class PipelineGraph;
 class Node;
+class Pad;
 enum class OperationMode;
 
 class GraphViewer : public Gtk::DrawingArea {
@@ -45,6 +46,7 @@ class GraphViewer : public Gtk::DrawingArea {
 
         std::vector<Node*> m_nodes;
         
+        Pad* m_linking_pad = nullptr;
         Node* m_selected_node = nullptr;
         int m_move_start_x, m_move_start_y;
         int m_cut_start_x, m_cut_start_y;

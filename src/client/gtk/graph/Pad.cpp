@@ -86,6 +86,8 @@ void InputPad::link(Pad* peer, bool initiator)
 
     m_peer = out;
     m_initiator = initiator;
+    m_staging_link = false;
+
 }
 void InputPad::unlink(bool initiator)
 {
@@ -114,6 +116,7 @@ void OutputPad::link(Pad* peer, bool initiator)
 
     m_peer = in;
     m_initiator = initiator;
+    m_staging_link = false;
 }
 void OutputPad::unlink(bool initiator)
 {
