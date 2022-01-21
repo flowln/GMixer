@@ -11,7 +11,7 @@
 class ElementNode;
 class PipelineGraph;
 class Node;
-class Pad;
+class Pad; 
 enum class OperationMode;
 
 class GraphViewer : public Gtk::DrawingArea {
@@ -36,6 +36,9 @@ class GraphViewer : public Gtk::DrawingArea {
         void beginCutOperation(double x, double y);
         void endCutOperation(double x, double y);
 
+        inline void pressedInSelectMode(unsigned int button, double x, double y);
+        inline void pressedInDeleteMode(double x, double y);
+
         static double cursor_pos_x, cursor_pos_y;
     private:
         PipelineGraph* m_parent;
@@ -44,7 +47,7 @@ class GraphViewer : public Gtk::DrawingArea {
         Glib::RefPtr<Gtk::GestureDrag> m_drag_controller;
         Glib::RefPtr<Gtk::EventControllerMotion> m_motion_controller;
 
-        std::vector<Node*> m_nodes;
+        std::list<Node*> m_nodes;
         
         Pad* m_linking_pad = nullptr;
         Node* m_selected_node = nullptr;

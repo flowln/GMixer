@@ -12,7 +12,10 @@ Element::Element(GstElement* element)
 
 Element::~Element()
 {
-    g_object_unref(m_element);
+    GstObject* parent;
+    if((parent = gst_element_get_parent(m_element))){
+        gst_bin_remove(GST_BIN(parent), m_element);
+    }
 }
 
 const gchar* Element::getName() const

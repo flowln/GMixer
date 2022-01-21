@@ -37,13 +37,19 @@ PipelineGraph::PipelineGraph(PipelineEditor* parent)
     m_mode_cut->set_image_from_icon_name("edit-cut-symbolic");
     m_mode_cut->set_tooltip_text("Cut existing links");
 
+    m_mode_delete = Gtk::make_managed<Gtk::ToggleButton>("Delete");
+    m_mode_delete->set_image_from_icon_name("edit-delete-symbolic");
+    m_mode_delete->set_tooltip_text("Delete nodes");
+
     m_mode_select->set_active(true);
     m_mode_move->set_group(*m_mode_select);
     m_mode_cut->set_group(*m_mode_select);
+    m_mode_delete->set_group(*m_mode_select);
 
     m_mode_select->signal_clicked().connect([this]{ setMode(OperationMode::MODE_SELECT); });
     m_mode_move->signal_clicked().connect([this]{ setMode(OperationMode::MODE_MOVE); });
     m_mode_cut->signal_clicked().connect([this]{ setMode(OperationMode::MODE_CUT); });
+    m_mode_delete->signal_clicked().connect([this]{ setMode(OperationMode::MODE_DELETE); });
 
     auto tip = Gtk::make_managed<Gtk::Label>("To add an element to the pipeline, select it in the list below and click the 'Add' button.");
     tip->set_ellipsize(Pango::EllipsizeMode::END);
@@ -51,6 +57,7 @@ PipelineGraph::PipelineGraph(PipelineEditor* parent)
     m_bar->pack_start(*m_mode_select);
     m_bar->pack_start(*m_mode_move);
     m_bar->pack_start(*m_mode_cut);
+    m_bar->pack_start(*m_mode_delete);
     m_bar->pack_end(*tip);
 
     append(*m_viewer);
@@ -67,6 +74,12 @@ PipelineGraph::PipelineGraph(PipelineEditor* parent)
                 last_mode = m_mode;
                 setMode(OperationMode::MODE_MOVE);
             }
+            else if(keyval == GDK_KEY_Delete)
+                m_mode_delete->activate();
+            else if(keyval == GDK_KEY_s)
+                m_mode_select->activate();
+            
+
            return true; 
         }, false);
     key_controller->signal_key_released().connect(
@@ -97,6 +110,9 @@ void PipelineGraph::setMode(OperationMode new_mode)
         set_cursor(move_cursor);
         break;
     case OperationMode::MODE_CUT:
+        set_cursor();
+        break;
+    case OperationMode::MODE_DELETE:
         set_cursor();
         break;
     }

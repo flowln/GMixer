@@ -24,6 +24,9 @@ class Node {
         Node(GraphViewer* parent, Glib::ustring name, double x, double y);
         virtual ~Node() = default;
 
+        /** Destroys the node and frees it. Use this method instead of `delete node;`.*/
+        void destroy();
+
         /** Set new position of the node, update its pads and update the node. */
         void setPosition(double new_x, double new_y);
 

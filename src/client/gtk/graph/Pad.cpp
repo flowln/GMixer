@@ -9,6 +9,14 @@ Pad::Pad(Node* parent, GstPad* base)
 {
 }
 
+void Pad::destroy()
+{
+    if(isLinked())
+        unlink();
+
+    delete this;
+}
+
 bool Pad::operator==(GstPad* pad)
 {
     return m_base == pad;

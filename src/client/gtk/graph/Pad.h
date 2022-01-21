@@ -10,6 +10,8 @@ class Pad {
         Pad(Node* parent, GstPad* base);
         virtual ~Pad() = default;
 
+        void destroy();
+
         bool operator==(GstPad*);
         GstPad* getBase() const { return m_base; }
 

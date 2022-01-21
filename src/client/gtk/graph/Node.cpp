@@ -50,6 +50,20 @@ Node::Node(GraphViewer* parent, Glib::ustring name, double x, double y)
     setPosition(x, y);
 }
 
+void Node::destroy()
+{
+    deselect();
+    stopLinking();
+    for(auto pad : m_input_pads){
+        pad->destroy();
+    }
+    for(auto pad : m_output_pads){
+        pad->destroy();
+    }
+
+    delete this;
+}
+
 void Node::setPosition(double new_x, double new_y)
 {
     m_x = new_x;

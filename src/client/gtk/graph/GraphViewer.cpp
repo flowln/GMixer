@@ -55,7 +55,11 @@ void GraphViewer::addNode(Node* node)
 
 void GraphViewer::removeNode(Node* node)
 {
-
+    m_nodes.remove(node);
+    if(node->isSelected())
+        m_selected_node = nullptr;
+    
+    node->destroy();
 }
 
 OperationMode GraphViewer::getMode()
@@ -89,13 +93,8 @@ void GraphViewer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int h
     }
 }
 
-void GraphViewer::pressed(int n, double x, double y)
+void GraphViewer::pressedInSelectMode(unsigned int button, double x, double y)
 {
-    if(getMode() != OperationMode::MODE_SELECT)
-        return;
-
-    auto button = m_click_controller->get_current_button();
-
     if(button == 1){ //Left click
         for(auto node : m_nodes){
             if(node->contains(x, y)){
@@ -129,6 +128,29 @@ void GraphViewer::pressed(int n, double x, double y)
         }
     }
 
+}
+void GraphViewer::pressedInDeleteMode(double x, double y)
+{
+    for(auto node : m_nodes){
+        if(node->contains(x, y)){
+            removeNode(node);
+            break;
+        }
+    }
+
+}
+
+void GraphViewer::pressed(int n, double x, double y)
+{
+    auto mode = getMode();
+    if(mode == OperationMode::MODE_SELECT){
+        auto button = m_click_controller->get_current_button();
+        pressedInSelectMode(button, x, y);
+    }
+    else if(mode == OperationMode::MODE_DELETE){
+        pressedInDeleteMode(x, y);
+    }
+
     queue_draw();
 }
 void GraphViewer::beginDrag(double x, double y)
@@ -160,6 +182,7 @@ void GraphViewer::moved(double x, double y)
     cursor_pos_y = y;
     queue_draw();
 }
+
 
 void GraphViewer::beginMoveOperation(double x, double y)
 {

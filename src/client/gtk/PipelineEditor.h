@@ -20,7 +20,8 @@ class PipelineEditor;
 enum class OperationMode{
     MODE_SELECT,
     MODE_MOVE,
-    MODE_CUT
+    MODE_CUT,
+    MODE_DELETE
 };
 
 class PipelineGraph : public Gtk::Box {
@@ -41,6 +42,7 @@ class PipelineGraph : public Gtk::Box {
         Gtk::ToggleButton* m_mode_select;
         Gtk::ToggleButton* m_mode_move;
         Gtk::ToggleButton* m_mode_cut;
+        Gtk::ToggleButton* m_mode_delete;
 };
 
 class ElementPropertyEditor : public Gtk::ScrolledWindow {

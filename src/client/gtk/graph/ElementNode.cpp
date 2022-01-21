@@ -22,7 +22,9 @@ ElementNode* ElementNode::create(GraphViewer* parent, const gchar* element_name,
 
 ElementNode::~ElementNode()
 {
-    m_properties->destroy();
+    if(m_properties)
+        m_properties->destroy();
+    delete m_element;
 }
 
 ElementNode::ElementNode(GraphViewer* parent, Element* element, int x, int y)
