@@ -1,7 +1,6 @@
 #include "client/gtk/HeaderBar.h"
 
 #include "client/gtk/PipelineSelector.h"
-#include "gstreamer/FileUtils.h"
 #include "gstreamer/PipelineIO.h"
 #include "gstreamer/PipelineListModel.h"
 #include "signals/Pipelines.h"

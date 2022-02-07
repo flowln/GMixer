@@ -7,12 +7,10 @@ namespace FileUtils{
     struct file_info{
         const gchar* name;
         const gchar* command;
-        bool destroy = false;
 
         public:
-            file_info(const gchar* name, const gchar* command) 
-                : name    (name)
-                , command (command)
+            file_info(const gchar* name, const gchar* command)
+                : name(name), command(command)
             {}
     };
 
