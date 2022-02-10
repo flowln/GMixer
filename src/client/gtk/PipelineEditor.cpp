@@ -15,53 +15,91 @@
 
 using namespace GMixer;
 
-PipelineGraph::PipelineGraph(PipelineEditor* parent)
+PipelineEditor::PipelineEditor(Gtk::Widget& parent, Pipeline* pipeline)
+    : Gtk::Paned()
+    , m_pipeline(pipeline)
+    , m_graph(this)
+    , m_properties(*this)
+{
+    set_start_child(m_graph);
+    set_end_child(m_properties);
+
+    Signals::pipeline_selected().connect(
+        [this](Pipeline* selected){
+            m_is_selected = selected == m_pipeline;
+        });
+
+    Signals::element_add().connect(
+        [this](Glib::UStringView name){
+            if(m_is_selected){
+                m_graph.addElement(new Element(name.c_str()));
+            }
+        });
+
+    // Check if pipeline is not empty, and populate the graph if that's the case
+    if(!m_pipeline->isEmpty()){
+        auto iterator = m_pipeline->getElementsSorted();
+        GValue item = G_VALUE_INIT;
+        bool done = FALSE;
+
+        while(!done){
+            switch (gst_iterator_next (iterator.get(), &item)) {
+            case GST_ITERATOR_OK:
+                m_graph.addElement(new Element(GST_ELEMENT( g_value_get_object(&item))));
+                g_value_reset (&item);
+                break;
+            case GST_ITERATOR_RESYNC:
+                gst_iterator_resync (iterator.get());
+                break;
+            case GST_ITERATOR_ERROR:
+                done = TRUE;
+                break;
+            case GST_ITERATOR_DONE:
+                done = TRUE;
+                break;
+            }
+        }
+
+        g_value_unset(&item);
+    }
+}
+
+PipelineEditor::PipelineGraph::PipelineGraph(PipelineEditor* parent)
     : Gtk::Box(Gtk::Orientation::VERTICAL)
     , m_editor(parent)
+    , m_bar()
+    , m_mode_select("Select")
+    , m_mode_move("Move")
+    , m_mode_cut("Cut")
+    , m_mode_delete("Delete")
 {
     set_parent(*parent);
     //set_size_request(200, 50);
+    
+// Viewer setup
+    m_viewer = Gtk::make_managed<GraphViewer>(parent);
 
-    m_bar = Gtk::make_managed<Gtk::ActionBar>();
-    m_viewer = Gtk::make_managed<GraphViewer>(this);
+// ActionBar setup
+    // Set buttons appearence
+    m_mode_select.set_image_from_icon_name("edit-select");
+    m_mode_select.set_tooltip_text("Select node or link");
+    m_mode_move.set_image_from_icon_name("fitbest");
+    m_mode_move.set_tooltip_text("Move node");
+    m_mode_cut.set_image_from_icon_name("edit-cut-symbolic");
+    m_mode_cut.set_tooltip_text("Cut existing links");
+    m_mode_delete.set_image_from_icon_name("edit-delete-symbolic");
+    m_mode_delete.set_tooltip_text("Delete nodes");
 
-    m_mode_select = Gtk::make_managed<Gtk::ToggleButton>("Select");
-    m_mode_select->set_image_from_icon_name("edit-select");
-    m_mode_select->set_tooltip_text("Select node or link");
+    // Set buttons functionality
+    m_mode_select.set_active(true);
+    m_mode_move.set_group(m_mode_select);
+    m_mode_cut.set_group(m_mode_select);
+    m_mode_delete.set_group(m_mode_select);
 
-    m_mode_move = Gtk::make_managed<Gtk::ToggleButton>("Move");
-    m_mode_move->set_image_from_icon_name("fitbest");
-    m_mode_move->set_tooltip_text("Move node");
-
-    m_mode_cut = Gtk::make_managed<Gtk::ToggleButton>("Cut");
-    m_mode_cut->set_image_from_icon_name("edit-cut-symbolic");
-    m_mode_cut->set_tooltip_text("Cut existing links");
-
-    m_mode_delete = Gtk::make_managed<Gtk::ToggleButton>("Delete");
-    m_mode_delete->set_image_from_icon_name("edit-delete-symbolic");
-    m_mode_delete->set_tooltip_text("Delete nodes");
-
-    m_mode_select->set_active(true);
-    m_mode_move->set_group(*m_mode_select);
-    m_mode_cut->set_group(*m_mode_select);
-    m_mode_delete->set_group(*m_mode_select);
-
-    m_mode_select->signal_clicked().connect([this]{ setMode(OperationMode::MODE_SELECT); });
-    m_mode_move->signal_clicked().connect([this]{ setMode(OperationMode::MODE_MOVE); });
-    m_mode_cut->signal_clicked().connect([this]{ setMode(OperationMode::MODE_CUT); });
-    m_mode_delete->signal_clicked().connect([this]{ setMode(OperationMode::MODE_DELETE); });
-
-    auto tip = Gtk::make_managed<Gtk::Label>("To add an element to the pipeline, select it in the list below and click the 'Add' button.");
-    tip->set_ellipsize(Pango::EllipsizeMode::END);
-
-    m_bar->pack_start(*m_mode_select);
-    m_bar->pack_start(*m_mode_move);
-    m_bar->pack_start(*m_mode_cut);
-    m_bar->pack_start(*m_mode_delete);
-    m_bar->pack_end(*tip);
-
-    append(*m_viewer);
-    append(*m_bar);
+    m_mode_select.signal_clicked().connect([this]{ setMode(OperationMode::MODE_SELECT); });
+    m_mode_move.signal_clicked().connect([this]{ setMode(OperationMode::MODE_MOVE); });
+    m_mode_cut.signal_clicked().connect([this]{ setMode(OperationMode::MODE_CUT); });
+    m_mode_delete.signal_clicked().connect([this]{ setMode(OperationMode::MODE_DELETE); });
 
     // Sets up keyboard shortcuts
     // Return to previous mode when key is released
@@ -75,9 +113,9 @@ PipelineGraph::PipelineGraph(PipelineEditor* parent)
                 setMode(OperationMode::MODE_MOVE);
             }
             else if(keyval == GDK_KEY_Delete)
-                m_mode_delete->activate();
+                m_mode_delete.activate();
             else if(keyval == GDK_KEY_s)
-                m_mode_select->activate();
+                m_mode_select.activate();
             
 
            return true; 
@@ -90,14 +128,23 @@ PipelineGraph::PipelineGraph(PipelineEditor* parent)
         }, false);
 
     add_controller(key_controller);
-}
 
-void PipelineGraph::addElement(Element* element)
+    // Add everything to the bar
+    m_bar.pack_start(m_mode_select);
+    m_bar.pack_start(m_mode_move);
+    m_bar.pack_start(m_mode_cut);
+    m_bar.pack_start(m_mode_delete);
+
+// Add everything to 'PipelineGraph'
+    append(*m_viewer);
+    append(m_bar);
+
+}
+void PipelineEditor::PipelineGraph::addElement(Element* element)
 {
     m_viewer->addNode(ElementNode::create(m_viewer, element, 0, 0));
 }
-
-void PipelineGraph::setMode(OperationMode new_mode)
+void PipelineEditor::PipelineGraph::setMode(OperationMode new_mode)
 {
     static auto move_cursor = Gdk::Cursor::create("move");
 
@@ -118,18 +165,17 @@ void PipelineGraph::setMode(OperationMode new_mode)
     }
 }
 
-ElementPropertyEditor::ElementPropertyEditor(Gtk::Widget& parent)
+PipelineEditor::ElementPropertyEditor::ElementPropertyEditor(Gtk::Widget& parent)
     : Gtk::ScrolledWindow()
 {
     set_parent(parent);
     set_size_request(140, -1);
-    m_properties = Gtk::make_managed<Gtk::ListBox>();
-    m_properties->set_selection_mode(Gtk::SelectionMode::NONE);
-    set_child(*m_properties);
+    m_properties.set_selection_mode(Gtk::SelectionMode::NONE);
+    set_child(m_properties);
 
     Signals::node_selected().connect(sigc::mem_fun(*this, &ElementPropertyEditor::hook));
 }
-void ElementPropertyEditor::hook(Node* node)
+void PipelineEditor::ElementPropertyEditor::hook(Node* node)
 {
     if(m_hooked_node == node)
         return;
@@ -137,24 +183,24 @@ void ElementPropertyEditor::hook(Node* node)
     m_hooked_node = node;
     
     Gtk::Widget* widg;
-    while((widg = m_properties->get_row_at_index(0))){
-        m_properties->remove(*widg);
+    while((widg = m_properties.get_row_at_index(0))){
+        m_properties.remove(*widg);
     }
 
     if(!node)
         return;
     
-    m_properties->append(*Gtk::make_managed<Gtk::Label>(Glib::ustring::sprintf("Properties of %s", node->getName().c_str())));
+    m_properties.append(*Gtk::make_managed<Gtk::Label>(Glib::ustring::sprintf("Properties of %s", node->getName().c_str())));
     try{
         auto properties = node->getProperties();
         for(auto prop : *properties){
-            m_properties->append(*createWidget(prop));
+            m_properties.append(*createWidget(prop));
         }
     } catch(const std::exception& ex){
         printf("[ERROR] Could not get properties of %s:\n%s\n", node->getName().c_str(), ex.what());
     }
 }
-Gtk::Box* ElementPropertyEditor::createWidget(GMixer::Property* prop)
+Gtk::Box* PipelineEditor::ElementPropertyEditor::createWidget(GMixer::Property* prop)
 {
     auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
     box->set_spacing(8);
@@ -198,52 +244,3 @@ Gtk::Box* ElementPropertyEditor::createWidget(GMixer::Property* prop)
     return box;
 }
 
-PipelineEditor::PipelineEditor(Gtk::Widget& parent, Pipeline* pipeline)
-    : Gtk::Paned()
-    , m_pipeline(pipeline)
-{
-    m_graph = Gtk::make_managed<PipelineGraph>(this);
-    m_properties = Gtk::make_managed<ElementPropertyEditor>(*this);
-
-    set_start_child(*m_graph);
-    set_end_child(*m_properties);
-
-    Signals::pipeline_selected().connect(
-        [this](Pipeline* selected){
-            m_is_selected = selected == m_pipeline;
-        });
-
-    Signals::element_add().connect(
-        [this](Glib::UStringView name){
-            if(m_is_selected){
-                m_graph->addElement(new Element(name.c_str()));
-            }
-        });
-
-    // Check if pipeline is not empty, and populate the graph if that's the case
-    if(!m_pipeline->isEmpty()){
-        auto iterator = m_pipeline->getElementsSorted();
-        GValue item = G_VALUE_INIT;
-        bool done = FALSE;
-
-        while(!done){
-            switch (gst_iterator_next (iterator.get(), &item)) {
-            case GST_ITERATOR_OK:
-                m_graph->addElement(new Element(GST_ELEMENT( g_value_get_object(&item))));
-                g_value_reset (&item);
-                break;
-            case GST_ITERATOR_RESYNC:
-                gst_iterator_resync (iterator.get());
-                break;
-            case GST_ITERATOR_ERROR:
-                done = TRUE;
-                break;
-            case GST_ITERATOR_DONE:
-                done = TRUE;
-                break;
-            }
-        }
-
-        g_value_unset(&item);
-    }
-}

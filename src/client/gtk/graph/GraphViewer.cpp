@@ -10,7 +10,7 @@
 
 double GraphViewer::cursor_pos_x = 0, GraphViewer::cursor_pos_y = 0;
 
-GraphViewer::GraphViewer(PipelineGraph* parent)
+GraphViewer::GraphViewer(PipelineEditor* parent)
     : Gtk::DrawingArea()
     , m_parent(parent)
 {

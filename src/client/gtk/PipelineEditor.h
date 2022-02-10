@@ -24,11 +24,28 @@ enum class OperationMode{
     MODE_DELETE
 };
 
-class PipelineGraph : public Gtk::Box {
+class PipelineEditor final : public Gtk::Paned {
+public:
+    PipelineEditor(Gtk::Widget& parent, Pipeline* pipeline);
+
+    /* Return the pipeline associated with this editor. */
+    Pipeline* getPipeline() const { return m_pipeline; }
+    /* Return currently selected editing mode. */
+    OperationMode getMode() const { return m_graph.getMode(); };
+
+private:
+
+    /* This widget contains:
+     * - Representetion of the selected pipeline in graph form
+     * - ActionBar with editing and playback options for the pipeline / its graph
+     */
+    class PipelineGraph final : public Gtk::Box {
     public:
         PipelineGraph(PipelineEditor* parent);
 
+        /* FIXME: Add better way to add elements to the graph */
         void addElement(Element*);
+
         OperationMode getMode() const { return m_mode; };
         void setMode(OperationMode new_mode);
 
@@ -37,36 +54,33 @@ class PipelineGraph : public Gtk::Box {
         PipelineEditor* m_editor;
 
         GraphViewer* m_viewer;
-        Gtk::ActionBar* m_bar;
+        Gtk::ActionBar m_bar;
 
-        Gtk::ToggleButton* m_mode_select;
-        Gtk::ToggleButton* m_mode_move;
-        Gtk::ToggleButton* m_mode_cut;
-        Gtk::ToggleButton* m_mode_delete;
-};
+        Gtk::ToggleButton m_mode_select;
+        Gtk::ToggleButton m_mode_move;
+        Gtk::ToggleButton m_mode_cut;
+        Gtk::ToggleButton m_mode_delete;
+    };
 
-class ElementPropertyEditor : public Gtk::ScrolledWindow {
+    /* This widget contains:
+     * - List of editable properties of a selected element
+     */
+    class ElementPropertyEditor final : public Gtk::ScrolledWindow {
     public:
         ElementPropertyEditor(Gtk::Widget& parent);
+        /* Show properties of the argument. */
         void hook(Node*);
-
+    
     private:
         static Gtk::Box* createWidget(GMixer::Property*);
 
-        Gtk::ListBox* m_properties = nullptr;
+        Gtk::ListBox m_properties;
         Node* m_hooked_node = nullptr;
-};
+    };
 
-class PipelineEditor : public Gtk::Paned {
-    public:
-        PipelineEditor(Gtk::Widget& parent, Pipeline* pipeline);
+    Pipeline* m_pipeline;
+    PipelineGraph m_graph;
+    ElementPropertyEditor m_properties;
 
-        Pipeline* getPipeline() const { return m_pipeline; }
-
-    private:
-        Pipeline* m_pipeline;
-        PipelineGraph* m_graph;
-        ElementPropertyEditor* m_properties;
-
-        bool m_is_selected = true;
+    bool m_is_selected = true;
 };

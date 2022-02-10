@@ -9,14 +9,14 @@
 
 //Forward-declaration
 class ElementNode;
-class PipelineGraph;
+class PipelineEditor;
 class Node;
 class Pad; 
 enum class OperationMode;
 
 class GraphViewer : public Gtk::DrawingArea {
     public:
-        GraphViewer(PipelineGraph* parent);
+        GraphViewer(PipelineEditor* parent);
 
         ElementNode* searchForElement(GstElement*);
         void addNode(Node* node);
@@ -41,7 +41,7 @@ class GraphViewer : public Gtk::DrawingArea {
 
         static double cursor_pos_x, cursor_pos_y;
     private:
-        PipelineGraph* m_parent;
+        PipelineEditor* m_parent;
 
         Glib::RefPtr<Gtk::GestureClick> m_click_controller;
         Glib::RefPtr<Gtk::GestureDrag> m_drag_controller;
