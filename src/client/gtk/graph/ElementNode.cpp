@@ -1,12 +1,9 @@
-#include "gstreamer/Element.h"
-#include "client/gtk/PipelineEditor.h"
 #include "client/gtk/graph/ElementNode.h"
+#include "client/gtk/PipelineEditor.h"
 #include "client/gtk/graph/GraphViewer.h"
 #include "client/gtk/graph/Pad.h"
 
 #include <variant>
-
-using namespace GMixer;
 
 ElementNode* ElementNode::create(GraphViewer* parent, Element* element, int x, int y)
 {

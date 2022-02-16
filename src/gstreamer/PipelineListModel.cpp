@@ -33,16 +33,22 @@ PipelineListModel::PipelineListModel()
     m_store = Gtk::ListStore::create(m_records);
 }
 
-void PipelineListModel::addPipeline(Glib::RefPtr<Pipeline> pipeline)
+Gtk::TreePath PipelineListModel::addPipeline(Glib::RefPtr<Pipeline> pipeline)
 {
-    if(!s_instance)
-        return;
+    return addPipeline(pipeline->getName(), pipeline);
+}
+
+Gtk::TreePath PipelineListModel::addPipeline(Glib::ustring&& name, Glib::RefPtr<Pipeline> pipeline)
+{
+    //if(!s_instance)
+    //    return {};
 
     auto iter = s_instance->m_store->append();
     auto& records = s_instance->m_records;
 
-    (*iter)[records.m_pipeline_name] = pipeline->getName();
+    (*iter)[records.m_pipeline_name] = name;
     (*iter)[records.m_pipeline] = pipeline; 
+    return s_instance->getModel()->get_path(iter);
 
-    Signals::pipeline_added().emit(s_instance->getModel()->get_path(iter));
+    //Signals::pipeline_added().emit(s_instance->getModel()->get_path(iter));
 }

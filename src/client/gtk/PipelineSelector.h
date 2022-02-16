@@ -20,7 +20,7 @@ class PipelineSelector{
         static Gtk::TreeModel::Path currentPath();
         static Pipeline* currentPipeline();
 
-        Gtk::Widget& the() { return m_list; };
+        Gtk::TreeView& the() { return m_list; };
 
     protected:
         PipelineSelector(MainWindow* main_window);

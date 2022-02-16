@@ -1,7 +1,7 @@
 #include "client/gtk/HeaderBar.h"
 
+#include "client/gtk/Dialogs.h"
 #include "client/gtk/PipelineSelector.h"
-#include "gstreamer/PipelineIO.h"
 #include "gstreamer/PipelineListModel.h"
 #include "signals/Pipelines.h"
 
@@ -31,19 +31,20 @@ void HeaderBar::setTitleText(const Glib::ustring text)
 
 HeaderBar::HeaderBar()
 {
+    // Create widgets
     m_title = Gtk::make_managed<Gtk::Label>();
 
     m_add_button = Gtk::make_managed<Gtk::Button>();
     m_add_button->set_image_from_icon_name("list-add-symbolic");
-    m_add_button->signal_clicked().connect(sigc::ptr_fun(PipelineCreator::createPipeline));
+    m_add_button->signal_clicked().connect(sigc::ptr_fun(Dialog::createPipeline));
 
     m_import_button = Gtk::make_managed<Gtk::Button>();
     m_import_button->set_image_from_icon_name("document-open-symbolic");
-    m_import_button->signal_clicked().connect(sigc::ptr_fun(PipelineCreator::createPipelineFromFile));
+    m_import_button->signal_clicked().connect(sigc::ptr_fun(Dialog::importPipelineFromFile));
 
     m_save_button = Gtk::make_managed<Gtk::Button>();
     m_save_button->set_image_from_icon_name("document-save-symbolic");
-    m_save_button->signal_clicked().connect(sigc::ptr_fun(PipelineSaver::saveCurrentPipeline));
+    //m_save_button->signal_clicked().connect(sigc::ptr_fun(PipelineSaver::saveCurrentPipeline));
 
     m_control_pipeline = Gtk::make_managed<Gtk::Button>();
     m_control_pipeline->set_image_from_icon_name(MEDIA_RESUME_ICON_NAME);

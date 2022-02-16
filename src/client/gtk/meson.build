@@ -3,7 +3,8 @@ sources += files([
   'HeaderBar.cpp',
   'ElementSelector.cpp',
   'PipelineEditor.cpp',
-  'PipelineSelector.cpp'
+  'PipelineSelector.cpp',
+  'Dialogs.cpp'
 ])
 
 subdir('graph')

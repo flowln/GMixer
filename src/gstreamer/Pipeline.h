@@ -9,10 +9,12 @@ class Element;
 class PipelineFactory;
 
 class Pipeline final : public Glib::Object {
-    friend class PipelineFactory;
     using element_iter_ptr = std::unique_ptr<GstIterator, GstIteratorFreeFunction>;
 
     public:
+        static Pipeline* create(Glib::ustring name = "", GstPipeline* base = nullptr, bool add_def_watcher = true);
+        static Pipeline* createFromString(const gchar* str, bool add_def_watcher = true);
+
         /** Adds element to the pipeline.
          *  Returns whether adding the element was (un)successful.
          * */
@@ -22,6 +24,7 @@ class Pipeline final : public Glib::Object {
         void addErrorListener(GCallback c)   { g_signal_connect(gst_pipeline_get_bus(m_pipeline), "message::error", c, NULL); }
         void addWarningListener(GCallback c) { g_signal_connect(gst_pipeline_get_bus(m_pipeline), "message::warning", c, NULL); }
         void addInfoListener(GCallback c)    { g_signal_connect(gst_pipeline_get_bus(m_pipeline), "message::info", c, NULL); }
+        static gboolean defaultMessageHandler(GstBus* bus, GstMessage* message, gpointer ptr);
 
         enum State {
             VOID_PENDING = GST_STATE_VOID_PENDING,
@@ -53,16 +56,7 @@ class Pipeline final : public Glib::Object {
         ~Pipeline();
 
     private:
-        Glib::ustring m_name = { "" };
+        Glib::ustring m_name;
         GstPipeline* m_pipeline;
-};
-
-class PipelineFactory final{
-    public:
-        static Pipeline* createEmpty(Glib::ustring& name);
-        static Pipeline* createFromString(Glib::ustring&& name, const gchar* repr);
-        static Pipeline* wrapBasePipeline(GstPipeline*);
-
-        static gboolean defaultMessageHandler(GstBus*, GstMessage*, gpointer);
 };
 

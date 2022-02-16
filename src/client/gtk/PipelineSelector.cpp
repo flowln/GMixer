@@ -1,5 +1,4 @@
 #include "gstreamer/Pipeline.h"
-#include "gstreamer/PipelineIO.h"
 #include "gstreamer/PipelineListModel.h"
 
 #include "signals/Pipelines.h"
@@ -37,7 +36,6 @@ PipelineSelector::PipelineSelector(MainWindow* main_window)
     : m_main_window(main_window)
     , m_model(PipelineListModel::create())
 {
-    PipelineCreator::setMainWindow(main_window);
     PipelineListModel::create();
 
     m_list.set_size_request(100, -1);
@@ -59,10 +57,4 @@ PipelineSelector::PipelineSelector(MainWindow* main_window)
         [](const Gtk::TreePath& path, Gtk::TreeViewColumn* const& column){ 
             Signals::pipeline_selected().emit(currentPipeline()); 
         });
-    Signals::pipeline_added().connect(
-        [this](const Gtk::TreePath& path){
-            m_list.get_selection()->select(path);
-            Signals::pipeline_selected().emit(currentPipeline()); 
-        });
 }
-

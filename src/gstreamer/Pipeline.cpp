@@ -2,6 +2,16 @@
 #include "gstreamer/ElementUtils.h"
 #include "gstreamer/Pipeline.h"
 
+
+Pipeline* Pipeline::create(Glib::ustring name, GstPipeline* base, bool add_def_watcher)
+{
+    Pipeline* pipeline = base ? new Pipeline(name, base) : new Pipeline(name);
+    if(add_def_watcher)
+        pipeline->addWatcher(&defaultMessageHandler);
+
+    return pipeline;
+}
+
 Pipeline::Pipeline(Glib::ustring& name)
     : Pipeline(name, GST_PIPELINE( gst_pipeline_new(name.c_str()) ))
 {}
@@ -13,7 +23,9 @@ Pipeline::Pipeline(GstPipeline* gst_pipeline)
 Pipeline::Pipeline(Glib::ustring name, GstPipeline* gst_pipeline)
     : m_name(name)
     , m_pipeline(gst_pipeline)
-{}
+{
+    addWatcher(&defaultMessageHandler);
+}
 
 Pipeline::~Pipeline()
 {
@@ -55,16 +67,7 @@ Pipeline::State Pipeline::currentState() const
     return static_cast<State>(GST_STATE(m_pipeline));
 }
 
-// Pipeline Factory
-
-Pipeline* PipelineFactory::createEmpty(Glib::ustring& name)
-{
-    auto pipeline = new Pipeline(name);
-    pipeline->addWatcher(&PipelineFactory::defaultMessageHandler );
-    return pipeline;
-}
-
-Pipeline* PipelineFactory::createFromString(Glib::ustring&& name, const gchar* repr)
+Pipeline* Pipeline::createFromString(const gchar* repr, bool add_def_watcher)
 {
     auto context = gst_parse_context_new();
     GError* error = nullptr;
@@ -95,20 +98,13 @@ Pipeline* PipelineFactory::createFromString(Glib::ustring&& name, const gchar* r
 
     gst_parse_context_free(context);
 
-    gst_element_set_name(gst_pipeline, std::move(name.c_str()));
-    auto pipeline = new Pipeline(name, GST_PIPELINE( gst_pipeline )); 
-    pipeline->addWatcher(&PipelineFactory::defaultMessageHandler );
+    auto pipeline = new Pipeline(GST_PIPELINE( gst_pipeline )); 
+    if(add_def_watcher)
+        pipeline->addWatcher(&defaultMessageHandler );
     return pipeline;
 }
 
-Pipeline* PipelineFactory::wrapBasePipeline(GstPipeline* gst_pipeline)
-{
-    auto pipeline = new Pipeline(gst_pipeline);
-    pipeline->addWatcher(&PipelineFactory::defaultMessageHandler);
-    return pipeline;
-}
-
-gboolean PipelineFactory::defaultMessageHandler(GstBus* bus, GstMessage* message, gpointer ptr)
+gboolean Pipeline::defaultMessageHandler(GstBus* bus, GstMessage* message, gpointer ptr)
 {
     gchar*  debug;
     GError* error;
