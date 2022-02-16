@@ -1,7 +1,9 @@
 #pragma once
 
-#include <string>
+#include "client/Client.h"
 
-namespace GtkClient{
-    bool runClient(std::string&& dbus_name, int argc, char* argv[]);
-}
+class GtkClient final : public Client {
+public:
+    GtkClient();
+    virtual bool runClient(std::string&& dbus_name, int argc, char* argv[]) override;
+};
