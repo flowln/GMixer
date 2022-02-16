@@ -69,17 +69,11 @@ private:
         ElementPropertyEditor(Gtk::Widget& parent);
         /* Show properties of the argument. */
         void hook(Node*);
-    
-    private:
-        static Gtk::Box* createElementWidget(Element::Property*);
-
-        Gtk::ListBox m_properties;
-        Node* m_hooked_node = nullptr;
     };
 
     Pipeline* m_pipeline;
     PipelineGraph m_graph;
-    ElementPropertyEditor m_properties;
+    ElementPropertyEditor m_info;
 
     bool m_is_selected = true;
 };

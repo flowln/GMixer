@@ -17,6 +17,7 @@ class ElementNode : public Node {
     bool operator==(Element*);
 
     std::vector<Element::Property*>& getProperties();
+    virtual Gtk::Widget* createInfoWidget() override;
 
     Element* getElement() { return m_element; };
     Pad* searchForPeer(GstPad*);

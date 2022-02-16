@@ -13,10 +13,10 @@
 #include <gtkmm/listbox.h>
 
 PipelineEditor::PipelineEditor(Gtk::Widget& parent, Pipeline* pipeline)
-    : Gtk::Paned(), m_pipeline(pipeline), m_graph(this), m_properties(*this)
+    : Gtk::Paned(), m_pipeline(pipeline), m_graph(this), m_info(*this)
 {
     set_start_child(m_graph);
-    set_end_child(m_properties);
+    set_end_child(m_info);
 
     Signals::pipeline_selected().connect([this](Pipeline* selected) { m_is_selected = selected == m_pipeline; });
 
@@ -158,82 +158,14 @@ PipelineEditor::ElementPropertyEditor::ElementPropertyEditor(Gtk::Widget& parent
 {
     set_parent(parent);
     set_size_request(140, -1);
-    m_properties.set_selection_mode(Gtk::SelectionMode::NONE);
-    set_child(m_properties);
 
     Signals::node_selected().connect(sigc::mem_fun(*this, &ElementPropertyEditor::hook));
 }
 void PipelineEditor::ElementPropertyEditor::hook(Node* node)
 {
-    if (m_hooked_node == node)
-        return;
-
-    m_hooked_node = node;
-
-    Gtk::Widget* widg;
-    while ((widg = m_properties.get_row_at_index(0))) {
-        m_properties.remove(*widg);
-    }
-
     if (!node)
         return;
-
-    m_properties.append(
-        *Gtk::make_managed<Gtk::Label>(Glib::ustring::sprintf("Properties of %s", node->getName().c_str())));
-
-    // FIXME: Find a way to make this without manually checking
-    // the type of the node.
-    auto element_node = dynamic_cast<ElementNode*>(node);
-    if (element_node) {
-        try {
-            auto& properties = element_node->getProperties();
-            for (auto prop : properties) {
-                m_properties.append(*createElementWidget(prop));
-            }
-        } catch (const std::exception& ex) {
-            printf("[ERROR] Could not get properties of %s:\n%s\n", node->getName().c_str(), ex.what());
-        }
-    }
-}
-Gtk::Box* PipelineEditor::ElementPropertyEditor::createElementWidget(Element::Property* prop)
-{
-    auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
-    box->set_spacing(8);
-
-    auto name = Gtk::make_managed<Gtk::Label>();
-    name->set_markup(Glib::ustring::sprintf("<i>%s</i>", prop->getName()));
-
-    auto default_value = prop->getValueAsString(Element::Property::ValueType::Default);
-    auto default_type  = prop->getTypeAsString();
-    auto value         = prop->getValueAsString();
-
-    name->set_tooltip_text(prop->getDescription());
-
-    auto entry = Gtk::make_managed<Gtk::Entry>();
-    entry->set_hexpand(true);
-    if (!value.empty())
-        entry->set_text(value);
-    entry->set_placeholder_text(default_value);
-    entry->set_tooltip_text(Glib::ustring::sprintf("Format: %s\t\tDefault: %s", default_type, default_value));
-
-    auto confirm_button = Gtk::make_managed<Gtk::Button>("Confirm");
-    confirm_button->set_sensitive(false);
-
-    entry->signal_changed().connect([confirm_button, entry, prop]() {
-        auto value = prop->getValueAsString();
-        if (value.empty())
-            confirm_button->set_sensitive(entry->get_text_length() != 0);
-        else
-            confirm_button->set_sensitive(std::string(entry->get_text()) != value);
-    });
-    confirm_button->signal_clicked().connect([confirm_button, entry, prop] {
-        prop->setValue(entry->get_text());
-        confirm_button->set_sensitive(false);
-    });
-
-    box->append(*name);
-    box->append(*entry);
-    box->append(*confirm_button);
-
-    return box;
+    auto info = node->createInfoWidget();
+    if(info)
+        set_child(*info);
 }
