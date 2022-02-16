@@ -1,6 +1,6 @@
 #pragma once
 
-#include "client/gtk/graph/Property.h"
+#include "gstreamer/Element.h"
 
 #include <gtkmm/actionbar.h>
 #include <gtkmm/paned.h>
@@ -12,7 +12,6 @@
 
 // Forward-declarations
 class Pipeline;
-class Element;
 class Node;
 class GraphViewer;
 class PipelineEditor;
@@ -72,7 +71,7 @@ private:
         void hook(Node*);
     
     private:
-        static Gtk::Box* createWidget(GMixer::Property*);
+        static Gtk::Box* createElementWidget(Element::Property*);
 
         Gtk::ListBox m_properties;
         Node* m_hooked_node = nullptr;

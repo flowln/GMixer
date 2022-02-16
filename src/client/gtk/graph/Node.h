@@ -1,7 +1,5 @@
 #pragma once
 
-#include "client/gtk/graph/Property.h"
-
 #include <gtkmm/widget.h>
 #include <glibmm/ustring.h>
 #include <cairomm/cairomm.h>
@@ -89,15 +87,8 @@ class Node {
 
         bool isSelected() const { return m_is_selected; }
 
-        Glib::ustring getName() const { return m_name.getName(); }
+        Glib::ustring getName() const { return m_name; }
         GraphViewer* getGraph() const { return m_parent; }
-
-        /** Get all the node's properties.
-         *  While the base Node only has a 'name' property, children of 
-         *  the Node class can have as many properties as they want.
-         *  */
-        virtual GMixer::PropertyList* getProperties();
-        virtual bool updateProperty(GMixer::Property*, const std::string&, const std::string&){ return false; };
 
     protected:
         /* To try to select a node, use onClick.*/
@@ -115,7 +106,7 @@ class Node {
 
         GraphViewer* m_parent;
 
-        GMixer::Property m_name;
+        std::string m_name;
         double m_x, m_y;
         double m_width, m_height;
 
@@ -126,4 +117,5 @@ class Node {
         Pad* m_selected_pad = nullptr;
 
         sigc::slot<void(void)> update_callback;
+
 };

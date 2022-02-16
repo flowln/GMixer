@@ -5,8 +5,6 @@
 #define node_to_pad_width   0.1
 #define node_to_pad_height  0.2
 
-using namespace GMixer;
-
 void Node::deselect()
 { 
     if(!m_is_selected)
@@ -33,13 +31,6 @@ void Node::select()
     m_is_selected = true; 
 
     update_callback();
-}
-
-PropertyList* Node::getProperties() 
-{
-    auto ptr = new PropertyList();
-    ptr->add(&m_name);
-    return ptr;
 }
 
 Node::Node(GraphViewer* parent, Glib::ustring name, double x, double y)
