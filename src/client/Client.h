@@ -14,4 +14,7 @@ class Client {
     virtual bool runClient(std::string&& dbus_name, int argc, char* argv[]) = 0;
 
     virtual std::shared_ptr<Logger> loggingAgent() = 0;
+
+   protected:
+    std::shared_ptr<Logger> m_logger;
 };

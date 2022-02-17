@@ -16,5 +16,7 @@ bool GtkClient::runClient(std::string&& dbus_name, int argc, char* argv[])
 std::shared_ptr<Logger> GtkClient::loggingAgent()
 {
     // TODO: Add GTK Logger
-    return std::make_shared<CommandLineLogger>(Logger::LoggingLevel::WARNING);
+    if (!m_logger.get())
+        m_logger = std::make_shared<CommandLineLogger>(Logger::LoggingLevel::WARNING);
+    return m_logger;
 }
