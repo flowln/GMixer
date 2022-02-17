@@ -3,5 +3,6 @@ sources += files([
   'GtkClient.cpp'
 ])
 
-subdir('gtk')
+subdir('cmd')
 subdir('common')
+subdir('gtk')

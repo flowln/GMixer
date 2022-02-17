@@ -1,3 +1,4 @@
 sources += files([
-  'PipelineFactory.cpp'
+  'PipelineFactory.cpp',
+  'Logger.cpp'
 ])

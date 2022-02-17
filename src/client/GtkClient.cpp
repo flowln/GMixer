@@ -1,12 +1,10 @@
 #include "client/GtkClient.h"
 
-#include "client/gtk/MainWindow.h"
 #include <gtkmm/application.h>
+#include "client/cmd/CommandLineLogger.h"
+#include "client/gtk/MainWindow.h"
 
-GtkClient::GtkClient()
-{
-
-}
+GtkClient::GtkClient() {}
 
 bool GtkClient::runClient(std::string&& dbus_name, int argc, char* argv[])
 {
@@ -14,4 +12,9 @@ bool GtkClient::runClient(std::string&& dbus_name, int argc, char* argv[])
     app->register_application();
 
     return app->make_window_and_run<MainWindow>(argc, argv);
+}
+std::shared_ptr<Logger> GtkClient::loggingAgent()
+{
+    // TODO: Add GTK Logger
+    return std::make_shared<CommandLineLogger>(Logger::LoggingLevel::WARNING);
 }
