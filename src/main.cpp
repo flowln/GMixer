@@ -1,14 +1,27 @@
 #include <gst/gst.h>
 
+#include "ProjectConfiguration.h"
+
+#ifdef GTK_ENABLED
 #include "client/GtkClient.h"
+#else
+#include "client/Client.h"
+#endif
 
 int main(int argc, char* argv[])
 {
     gst_init(&argc, &argv);
 
-    Client* fend;
-    if (true)  // FIXME: Insert check for GTK compatibility here
-        fend = new GtkClient();
+    Client* fend = nullptr;
+
+#ifdef GTK_ENABLED
+    fend = new GtkClient();
+#endif
+
+    if (!fend) {
+        printf("No client available! Please check your build configuration with `meson configure`.\n");
+        return 1;
+    }
 
     return fend->runClient("org.flowln.GMixer", argc, argv);
 }
