@@ -1,13 +1,13 @@
 #pragma once
 
-#include <glibmm/object.h>
 #include <gst/gst.h>
 
 #include <sigc++/slot.h>
 
+#include <string>
 #include <variant>
 
-class Element : public Glib::Object {
+class Element {
    public:
     // Every GST element has zero or more properties,
     // each of which have different information on it,

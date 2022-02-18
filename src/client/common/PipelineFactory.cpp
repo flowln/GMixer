@@ -11,22 +11,31 @@
 
 Client* PipelineFactory::s_client = nullptr;
 
-void PipelineFactory::createEmptyPipeline(Glib::ustring const& name)
+PipelineFactory* PipelineFactory::create()
+{
+    if (!s_client)
+        return nullptr;
+    return new PipelineFactory();
+}
+
+PipelineFactory::PipelineFactory() : m_pipelines(s_client->pipelineStorageAgent()) {}
+
+void PipelineFactory::createEmptyPipeline(std::string const& name)
 {
     auto pipeline = Pipeline::create(name);
-    PipelineListModel::addPipeline(Glib::make_refptr_for_instance(pipeline));
+    m_pipelines->addPipeline(pipeline);
 }
 
 void PipelineFactory::createPipelineFromData(std::shared_ptr<FileUtils::file_info> data)
 {
-    auto pipeline   = Pipeline::createFromString(data->command);
-    auto added_path = PipelineListModel::addPipeline(data->name, Glib::make_refptr_for_instance(pipeline));
+    auto pipeline = Pipeline::createFromString(data->command);
+    m_pipelines->addPipeline(data->name, pipeline);
 
     // FIXME: Remove dependency from GTK
 #ifdef GTK_ENABLED
     if (dynamic_cast<GtkClient*>(s_client)) {
-        PipelineSelector::getInstance()->the().get_selection()->select(added_path);
-        Signals::pipeline_selected().emit(PipelineSelector::currentPipeline());
+        // PipelineSelector::getInstance()->the().get_selection()->select(added_path);
+        // Signals::pipeline_selected().emit(pipeline);
     }
 #endif
 }

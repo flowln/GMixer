@@ -1,32 +1,10 @@
 #include "PipelineListModel.h"
 #include "signals/Pipelines.h"
 
-PipelineListModel* PipelineListModel::s_instance = nullptr;
-
 PipelineRecord::PipelineRecord()
 {
     add(m_pipeline_name);
     add(m_pipeline);
-}
-
-std::unique_ptr<PipelineListModel> PipelineListModel::create()
-{
-    if (s_instance)
-        return nullptr;
-
-    s_instance = new PipelineListModel();
-    return std::unique_ptr<PipelineListModel>(s_instance);
-}
-
-Pipeline* PipelineListModel::getPipeline(const Gtk::TreeModel::Path& path)
-{
-    if (!s_instance)
-        return nullptr;
-
-    auto pipeline =
-        (Glib::RefPtr<Pipeline>)(*s_instance->getModel()->get_iter(path))[s_instance->getRecord().m_pipeline];
-
-    return pipeline.get();
 }
 
 PipelineListModel::PipelineListModel()
@@ -34,22 +12,40 @@ PipelineListModel::PipelineListModel()
     m_store = Gtk::ListStore::create(m_records);
 }
 
-Gtk::TreePath PipelineListModel::addPipeline(Glib::RefPtr<Pipeline> pipeline)
+PipelineListModel* PipelineListModel::create()
 {
-    return addPipeline(pipeline->getName(), pipeline);
+    return new PipelineListModel();
 }
 
-Gtk::TreePath PipelineListModel::addPipeline(Glib::ustring&& name, Glib::RefPtr<Pipeline> pipeline)
+unsigned int PipelineListModel::numEntries() const
 {
-    // if(!s_instance)
-    //     return {};
+    return m_iterators.size();
+}
 
-    auto iter     = s_instance->m_store->append();
-    auto& records = s_instance->m_records;
+std::weak_ptr<Pipeline> PipelineListModel::getPipeline(unsigned int index)
+{
+    return (std::shared_ptr<Pipeline>)((*m_iterators[index])[getRecord().m_pipeline]);
+}
+
+std::weak_ptr<Pipeline> PipelineListModel::getPipeline(Gtk::TreePath path)
+{
+    return (std::shared_ptr<Pipeline>)((*m_store->get_iter(path))[getRecord().m_pipeline]);
+}
+
+void PipelineListModel::addPipeline(Pipeline* pipeline)
+{
+    addPipeline(pipeline->getName(), pipeline);
+}
+
+void PipelineListModel::addPipeline(std::string&& name, Pipeline* pipeline)
+{
+    auto iter = m_store->append();
+    m_iterators.push_back(iter);
+
+    auto& records = m_records;
 
     (*iter)[records.m_pipeline_name] = name;
-    (*iter)[records.m_pipeline]      = pipeline;
-    return s_instance->getModel()->get_path(iter);
+    (*iter)[records.m_pipeline]      = std::shared_ptr<Pipeline>(pipeline);
 
-    // Signals::pipeline_added().emit(s_instance->getModel()->get_path(iter));
+    signal_row_added(iter);
 }

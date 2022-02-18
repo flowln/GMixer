@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gstreamer/Pipeline.h"
+#include "client/common/Storage.h"
 
 #include <gtkmm/liststore.h>
 
@@ -8,27 +8,30 @@ class PipelineRecord : public Gtk::TreeModelColumnRecord {
    public:
     PipelineRecord();
 
-    Gtk::TreeModelColumn<Glib::ustring> m_pipeline_name;
-    Gtk::TreeModelColumn<Glib::RefPtr<Pipeline>> m_pipeline;
+    Gtk::TreeModelColumn<std::string> m_pipeline_name;
+    Gtk::TreeModelColumn<std::shared_ptr<Pipeline>> m_pipeline;
 };
 
-class PipelineListModel : public Glib::Object {
+class PipelineListModel : public PipelineStorage {
    public:
-    static std::unique_ptr<PipelineListModel> create();
+    static PipelineListModel* create();
 
-    static Gtk::TreePath addPipeline(Glib::RefPtr<Pipeline> pipeline);
-    static Gtk::TreePath addPipeline(Glib::ustring&& name, Glib::RefPtr<Pipeline> pipeline);
-    static Pipeline* getPipeline(const Gtk::TreeModel::Path&);
+    virtual unsigned int numEntries() const override;
+    virtual std::weak_ptr<Pipeline> getPipeline(unsigned int) override;
+    virtual void addPipeline(Pipeline*) override;
+    virtual void addPipeline(std::string&&, Pipeline*) override;
 
-    Glib::RefPtr<Gtk::ListStore> getModel() const { return m_store; };
+    std::weak_ptr<Pipeline> getPipeline(Gtk::TreePath);
+    std::shared_ptr<Gtk::ListStore> getModel() const { return m_store; };
     PipelineRecord& getRecord() { return m_records; };
 
-   protected:
-    PipelineListModel();
+    sigc::signal<void(Gtk::TreeModel::iterator&)> signal_row_added;
 
    private:
-    static PipelineListModel* s_instance;
+    PipelineListModel();
 
-    Glib::RefPtr<Gtk::ListStore> m_store;
+    std::shared_ptr<Gtk::ListStore> m_store;
+    // FIXME: Handle case of reordering
+    std::vector<Gtk::TreeModel::iterator> m_iterators;
     PipelineRecord m_records;
 };

@@ -3,6 +3,8 @@
  * */
 #pragma once
 
+#include "client/GtkClient.h"
+
 #include <glibmm/refptr.h>
 
 #include <gtkmm/treeview.h>
@@ -12,24 +14,18 @@ class MainWindow;
 class Pipeline;
 class PipelineListModel;
 
-class PipelineSelector{
-    public:
-        static PipelineSelector* create(MainWindow* main_window);
-        static PipelineSelector* getInstance() { return s_instance; };
+class PipelineSelector final : public Gtk::TreeView {
+   public:
+    static void setClient(Client* client);
+    static PipelineSelector* create(MainWindow* main_window);
 
-        static Gtk::TreeModel::Path currentPath();
-        static Pipeline* currentPipeline();
+    Gtk::TreeModel::Path currentPath();
+    Pipeline* currentPipeline();
 
-        Gtk::TreeView& the() { return m_list; };
+   private:
+    PipelineSelector(MainWindow* main_window);
 
-    protected:
-        PipelineSelector(MainWindow* main_window);
+    static GtkClient* s_client;
 
-    private:
-        static PipelineSelector* s_instance;
-
-        MainWindow* m_main_window;
-
-        Glib::RefPtr<PipelineListModel> m_model;
-        Gtk::TreeView m_list;
+    MainWindow* m_main_window;
 };

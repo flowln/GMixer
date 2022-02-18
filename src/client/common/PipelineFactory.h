@@ -5,12 +5,17 @@
 
 #include <glibmm/ustring.h>
 
-class PipelineFactory{
-public:
+class PipelineFactory {
+   public:
     static void setClient(Client* client) { s_client = client; }
-    void createEmptyPipeline(Glib::ustring const& name);
+    static PipelineFactory* create();
+
+    void createEmptyPipeline(std::string const& name);
     void createPipelineFromData(std::shared_ptr<FileUtils::file_info> data);
 
-private:
+   private:
     static Client* s_client;
+
+    PipelineFactory();
+    std::shared_ptr<PipelineStorage> m_pipelines;
 };
