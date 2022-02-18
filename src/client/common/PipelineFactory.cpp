@@ -3,10 +3,9 @@
 
 #ifdef GTK_ENABLED
 #include "client/GtkClient.h"
+#include "client/gtk/PipelineListModel.h"
 #include "client/gtk/PipelineSelector.h"
 #endif
-
-#include "gstreamer/PipelineListModel.h"
 
 #include "signals/Pipelines.h"
 

@@ -1,21 +1,21 @@
 #include "client/gtk/HeaderBar.h"
 
 #include "client/gtk/Dialogs.h"
+#include "client/gtk/PipelineListModel.h"
 #include "client/gtk/PipelineSelector.h"
-#include "gstreamer/PipelineListModel.h"
 #include "signals/Pipelines.h"
 
 #include <sigc++/functors/ptr_fun.h>
 
 #define MEDIA_RESUME_ICON_NAME "media-playback-start-symbolic"
-#define MEDIA_PAUSE_ICON_NAME "media-playback-pause-symbolic"
-#define MEDIA_STOP_ICON_NAME "media-playback-stop-symbolic"
+#define MEDIA_PAUSE_ICON_NAME  "media-playback-pause-symbolic"
+#define MEDIA_STOP_ICON_NAME   "media-playback-stop-symbolic"
 
 HeaderBar* HeaderBar::s_instance = nullptr;
 
 Gtk::HeaderBar* HeaderBar::create()
 {
-    if(s_instance)
+    if (s_instance)
         return s_instance->m_bar;
 
     s_instance = new HeaderBar();
@@ -24,7 +24,7 @@ Gtk::HeaderBar* HeaderBar::create()
 
 void HeaderBar::setTitleText(const Glib::ustring text)
 {
-    if(!s_instance)
+    if (!s_instance)
         return;
     s_instance->m_title->set_text(text);
 }
@@ -44,23 +44,21 @@ HeaderBar::HeaderBar()
 
     m_save_button = Gtk::make_managed<Gtk::Button>();
     m_save_button->set_image_from_icon_name("document-save-symbolic");
-    //m_save_button->signal_clicked().connect(sigc::ptr_fun(PipelineSaver::saveCurrentPipeline));
+    // m_save_button->signal_clicked().connect(sigc::ptr_fun(PipelineSaver::saveCurrentPipeline));
 
     m_control_pipeline = Gtk::make_managed<Gtk::Button>();
     m_control_pipeline->set_image_from_icon_name(MEDIA_RESUME_ICON_NAME);
-    m_control_pipeline->signal_clicked().connect(
-        [&]{
-            static bool is_playing = false;
-            if(is_playing){
-                if(PipelineSelector::currentPipeline()->changeState(Pipeline::State::PAUSED))
+    m_control_pipeline->signal_clicked().connect([&] {
+        static bool is_playing = false;
+        if (is_playing) {
+            if (PipelineSelector::currentPipeline()->changeState(Pipeline::State::PAUSED))
                 m_control_pipeline->set_image_from_icon_name(MEDIA_RESUME_ICON_NAME);
-            }
-            else{
-                if(PipelineSelector::currentPipeline()->changeState(Pipeline::State::PLAYING)) 
+        } else {
+            if (PipelineSelector::currentPipeline()->changeState(Pipeline::State::PLAYING))
                 m_control_pipeline->set_image_from_icon_name(MEDIA_PAUSE_ICON_NAME);
-            }
-            is_playing = !is_playing;
-        });
+        }
+        is_playing = !is_playing;
+    });
 
     m_bar = Gtk::make_managed<Gtk::HeaderBar>();
     m_bar->set_title_widget(*m_title);
@@ -69,9 +67,5 @@ HeaderBar::HeaderBar()
     m_bar->pack_start(*m_save_button);
     m_bar->pack_start(*m_control_pipeline);
 
-    Signals::pipeline_selected().connect(
-        [this](Pipeline* selected){
-            setTitleText(selected->getName());
-        });
+    Signals::pipeline_selected().connect([this](Pipeline* selected) { setTitleText(selected->getName()); });
 }
-

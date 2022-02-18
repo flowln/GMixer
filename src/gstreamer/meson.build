@@ -3,5 +3,4 @@ sources += files([
   'ElementListModel.cpp',
   'ElementUtils.cpp',
   'Pipeline.cpp',
-  'PipelineListModel.cpp'
 ])
