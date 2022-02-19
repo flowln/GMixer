@@ -43,14 +43,19 @@ const gchar* Element::getName() const
     return gst_element_get_name(m_element);
 }
 
-GList* Element::getSinks() const
+const GList* Element::getSinks() const
 {
     return GST_ELEMENT_CAST(m_element)->srcpads;
 }
 
-GList* Element::getSources() const
+const GList* Element::getSources() const
 {
     return GST_ELEMENT_CAST(m_element)->sinkpads;
+}
+
+const GList* Element::getPadTemplates() const
+{
+    return gst_element_get_pad_template_list(m_element);
 }
 
 int Element::isPadLinked(GstPad* pad)

@@ -2,6 +2,7 @@
 #include "client/gtk/PipelineEditor.h"
 #include "client/gtk/graph/GraphViewer.h"
 #include "client/gtk/graph/Pad.h"
+#include "gst/gstpadtemplate.h"
 
 #include <gtkmm/entry.h>
 #include <gtkmm/label.h>
@@ -28,6 +29,7 @@ ElementNode::~ElementNode()
 ElementNode::ElementNode(GraphViewer* parent, Element* element, int x, int y)
     : Node(parent, element->getName(), x, y), m_element(element)
 {
+    // Add always available pads
     auto sources = element->getSources();
     while (sources) {
         addInputPad(new InputPad(this, GST_PAD(sources->data)));
@@ -37,6 +39,26 @@ ElementNode::ElementNode(GraphViewer* parent, Element* element, int x, int y)
     while (sinks) {
         addOutputPad(new OutputPad(this, GST_PAD(sinks->data)));
         sinks = sinks->next;
+    }
+
+    auto templates = element->getPadTemplates();
+    while (templates) {
+        auto& templ = templates->data;
+        int presence;
+
+        if ((presence = GST_PAD_TEMPLATE_PRESENCE(templ)) != GST_PAD_ALWAYS) {
+            if (GST_PAD_TEMPLATE_DIRECTION(templ) == GST_PAD_SRC) {
+                addOutputPad(new OutputPad(
+                    this, nullptr,
+                    presence == GST_PAD_SOMETIMES ? Pad::Availability::SOMETIMES : Pad::Availability::ON_DEMAND));
+            } else if (GST_PAD_TEMPLATE_DIRECTION(templ) == GST_PAD_SINK) {
+                addInputPad(new InputPad(
+                    this, nullptr,
+                    presence == GST_PAD_SOMETIMES ? Pad::Availability::SOMETIMES : Pad::Availability::ON_DEMAND));
+            }
+        }
+
+        templates = templates->next;
     }
 }
 

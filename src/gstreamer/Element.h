@@ -77,8 +77,9 @@ class Element {
 
     std::vector<Property*>& getProperties();
 
-    GList* getSinks() const;
-    GList* getSources() const;
+    const GList* getSinks() const;
+    const GList* getSources() const;
+    const GList* getPadTemplates() const;
 
     static int isPadLinked(GstPad*);
 
