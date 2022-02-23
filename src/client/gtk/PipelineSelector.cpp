@@ -10,14 +10,6 @@
 
 GtkClient* PipelineSelector::s_client = nullptr;
 
-void PipelineSelector::setClient(Client* client)
-{
-    if ((s_client = static_cast<GtkClient*>(client)))
-        return;
-    else if (client)
-        client->loggingAgent()->sendError("PipelineSelector's client is not a GTK client!");
-}
-
 PipelineSelector* PipelineSelector::create(MainWindow* main_window)
 {
     return new PipelineSelector(main_window);
@@ -35,6 +27,9 @@ Pipeline* PipelineSelector::currentPipeline()
 
 PipelineSelector::PipelineSelector(MainWindow* main_window) : m_main_window(main_window)
 {
+    if (!s_client)
+        s_client = static_cast<GtkClient*>(Client::instance());
+
     set_size_request(100, -1);
     set_vexpand(true);
 

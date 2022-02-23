@@ -16,7 +16,6 @@ class PipelineListModel;
 
 class PipelineSelector final : public Gtk::TreeView {
    public:
-    static void setClient(Client* client);
     static PipelineSelector* create(MainWindow* main_window);
 
     Gtk::TreeModel::Path currentPath();

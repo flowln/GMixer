@@ -11,6 +11,7 @@ class GtkClient final : public Client {
     virtual bool runClient(std::string&& dbus_name, int argc, char* argv[]) override;
 
     virtual std::shared_ptr<Logger> loggingAgent() override;
+
     virtual PipelineListModel* pipelineStorageAgent() override;
 
    private:

@@ -11,7 +11,6 @@ GtkClient::GtkClient() : Client()
     // TODO: Add GTK Logger
     m_logger    = std::make_shared<CommandLineLogger>(Logger::LoggingLevel::WARNING);
     m_pipelines = PipelineListModel::create();
-    PipelineSelector::setClient(this);
 }
 
 GtkClient::~GtkClient()

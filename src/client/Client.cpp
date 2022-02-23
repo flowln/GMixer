@@ -1,8 +1,8 @@
 #include "client/Client.h"
 
-#include "client/common/PipelineFactory.h"
+Client* Client::s_instance = nullptr;
 
 Client::Client()
 {
-    PipelineFactory::setClient(this);
+    s_instance = this;
 }

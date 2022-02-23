@@ -8,15 +8,24 @@
 #include "client/Client.h"
 #endif
 
+class Initializer {
+   public:
+    static Client* init()
+    {
+        Client* fend = nullptr;
+
+#ifdef GTK_ENABLED
+        fend = new GtkClient();
+#endif
+        return fend;
+    }
+};
+
 int main(int argc, char* argv[])
 {
     gst_init(&argc, &argv);
 
-    Client* fend = nullptr;
-
-#ifdef GTK_ENABLED
-    fend = new GtkClient();
-#endif
+    Client* fend = Initializer::init();
 
     if (!fend) {
         printf("No client available! Please check your build configuration with `meson configure`.\n");

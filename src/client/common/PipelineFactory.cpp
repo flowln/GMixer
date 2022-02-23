@@ -9,16 +9,12 @@
 
 #include "signals/Pipelines.h"
 
-Client* PipelineFactory::s_client = nullptr;
-
 PipelineFactory* PipelineFactory::create()
 {
-    if (!s_client)
-        return nullptr;
     return new PipelineFactory();
 }
 
-PipelineFactory::PipelineFactory() : m_pipelines(s_client->pipelineStorageAgent()) {}
+PipelineFactory::PipelineFactory() : m_pipelines(Client::instance()->pipelineStorageAgent()) {}
 
 void PipelineFactory::createEmptyPipeline(std::string const& name)
 {
@@ -33,7 +29,7 @@ void PipelineFactory::createPipelineFromData(std::shared_ptr<FileUtils::file_inf
 
     // FIXME: Remove dependency from GTK
 #ifdef GTK_ENABLED
-    if (dynamic_cast<GtkClient*>(s_client)) {
+    if (dynamic_cast<GtkClient*>(Client::instance())) {
         // PipelineSelector::getInstance()->the().get_selection()->select(added_path);
         // Signals::pipeline_selected().emit(pipeline);
     }
