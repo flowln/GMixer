@@ -20,7 +20,7 @@ PipelineEditor::PipelineEditor(Gtk::Widget& parent, Pipeline* pipeline)
 
     Signals::pipeline_selected().connect([this](Pipeline* selected) { m_is_selected = selected == m_pipeline; });
 
-    Signals::element_add().connect([this](Glib::UStringView name) {
+    Signals::element_add().connect([this](std::string name) {
         if (m_is_selected) {
             m_graph.addElement(new Element(name.c_str()));
         }
@@ -166,6 +166,6 @@ void PipelineEditor::ElementPropertyEditor::hook(Node* node)
     if (!node)
         return;
     auto info = node->createInfoWidget();
-    if(info)
+    if (info)
         set_child(*info);
 }

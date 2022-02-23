@@ -1,6 +1,7 @@
 sources += files([
   'MainWindow.cpp',
   'HeaderBar.cpp',
+  'ElementListModel.cpp',
   'ElementSelector.cpp',
   'PipelineEditor.cpp',
   'PipelineListModel.cpp',

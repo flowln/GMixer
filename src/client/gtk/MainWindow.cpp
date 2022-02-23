@@ -32,7 +32,6 @@ MainWindow::MainWindow() : m_main_container()
 {
     // Set own attributes
     set_title("GMixer");
-    set_size_request(750, 500);
     set_titlebar(*HeaderBar::create());
 
     // Setup general settings
@@ -44,7 +43,7 @@ MainWindow::MainWindow() : m_main_container()
     auto element_selector  = ElementSelector::create(this);
     auto pipeline_selector = PipelineSelector::create(this);
 
-    m_main_container.attach(element_selector->the(), 1, 1, 1, 1);
+    m_main_container.attach(*element_selector, 1, 1, 1, 1);
     m_main_container.attach(*pipeline_selector, 0, 0, 1, 2);
 
     set_child(m_main_container);
