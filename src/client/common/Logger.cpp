@@ -8,7 +8,7 @@ bool Logger::sendWarning(std::string&&) const
 {
     return m_level <= LoggingLevel::WARNING;
 }
-bool Logger::sendError(std::string&&) const
+bool Logger::sendError(std::string&&, std::exception*) const
 {
     return m_level <= LoggingLevel::ERROR;
 }

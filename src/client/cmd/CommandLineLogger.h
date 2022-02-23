@@ -8,5 +8,5 @@ class CommandLineLogger : public Logger {
 
     virtual bool sendInfo(std::string&& message) const override;
     virtual bool sendWarning(std::string&& message) const override;
-    virtual bool sendError(std::string&& message) const override;
+    virtual bool sendError(std::string&& message, std::exception* exc = nullptr) const override;
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <exception>
 #include <string>
 
 /* Base class for logging facilities */
@@ -13,7 +14,7 @@ class Logger {
 
     virtual bool sendInfo(std::string&&) const;
     virtual bool sendWarning(std::string&&) const;
-    virtual bool sendError(std::string&&) const;
+    virtual bool sendError(std::string&&, std::exception* exception = nullptr) const;
 
    protected:
     LoggingLevel m_level;
