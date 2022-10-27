@@ -1,12 +1,13 @@
-#include "gstreamer/Element.h"
-#include "client/gtk/PipelineEditor.h"
 #include "client/gtk/graph/ElementNode.h"
+#include "client/gtk/PipelineEditor.h"
 #include "client/gtk/graph/GraphViewer.h"
 #include "client/gtk/graph/Pad.h"
+#include "gst/gstpadtemplate.h"
+
+#include <gtkmm/entry.h>
+#include <gtkmm/label.h>
 
 #include <variant>
-
-using namespace GMixer;
 
 ElementNode* ElementNode::create(GraphViewer* parent, Element* element, int x, int y)
 {
@@ -22,38 +23,58 @@ ElementNode* ElementNode::create(GraphViewer* parent, const gchar* element_name,
 
 ElementNode::~ElementNode()
 {
-    m_properties->destroy();
+    delete m_element;
 }
 
 ElementNode::ElementNode(GraphViewer* parent, Element* element, int x, int y)
-    : Node(parent, element->getName(), x, y)
-    , m_element(element)
+    : Node(parent, element->getName(), x, y), m_element(element)
 {
+    // Add always available pads
     auto sources = element->getSources();
-    while(sources){
-        addInputPad(new InputPad(this, GST_PAD( sources->data )));
-        sources = sources->next; 
+    while (sources) {
+        addInputPad(new InputPad(this, GST_PAD(sources->data)));
+        sources = sources->next;
     }
     auto sinks = element->getSinks();
-    while(sinks){
-        addOutputPad(new OutputPad(this, GST_PAD( sinks->data )));
-        sinks = sinks->next; 
+    while (sinks) {
+        addOutputPad(new OutputPad(this, GST_PAD(sinks->data)));
+        sinks = sinks->next;
+    }
+
+    auto templates = element->getPadTemplates();
+    while (templates) {
+        auto& templ = templates->data;
+        int presence;
+
+        if ((presence = GST_PAD_TEMPLATE_PRESENCE(templ)) != GST_PAD_ALWAYS) {
+            if (GST_PAD_TEMPLATE_DIRECTION(templ) == GST_PAD_SRC) {
+                addOutputPad(new OutputPad(
+                    this, nullptr,
+                    presence == GST_PAD_SOMETIMES ? Pad::Availability::SOMETIMES : Pad::Availability::ON_DEMAND));
+            } else if (GST_PAD_TEMPLATE_DIRECTION(templ) == GST_PAD_SINK) {
+                addInputPad(new InputPad(
+                    this, nullptr,
+                    presence == GST_PAD_SOMETIMES ? Pad::Availability::SOMETIMES : Pad::Availability::ON_DEMAND));
+            }
+        }
+
+        templates = templates->next;
     }
 }
 
 void ElementNode::updateNode()
 {
-    for(auto in : m_input_pads){
-        if(in->isOutdated()){
+    for (auto in : m_input_pads) {
+        if (in->isOutdated()) {
             auto peer = in->getPeerOfBase();
-            if(peer)
+            if (peer)
                 in->link(peer);
         }
     }
-    for(auto out : m_output_pads){
-        if(out->isOutdated()){
+    for (auto out : m_output_pads) {
+        if (out->isOutdated()) {
             auto peer = out->getPeerOfBase();
-            if(peer)
+            if (peer)
                 out->link(peer);
         }
     }
@@ -64,74 +85,71 @@ bool ElementNode::operator==(Element* elem)
     return elem == m_element;
 }
 
-PropertyList* ElementNode::getProperties() 
+std::vector<Element::Property*>& ElementNode::getProperties()
 {
-    if(m_properties)
-        return m_properties;
-
-    auto ptr = new PropertyList();
-    ptr->add(&m_name);
-
-    guint num_props;
-    auto props = m_element->getProperties(&num_props);
-    for(guint i = 0; i < num_props; i++){
-        auto prop = props[i];
-        auto property = new Property(g_param_spec_get_name(prop), true);
-
-        property->addField("desc", g_param_spec_get_blurb(prop), G_TYPE_STRING);
-
-        auto def = g_param_spec_get_default_value(prop);
-        auto def_type = G_VALUE_TYPE( def );
-        std::string str;
-
-        if     (g_type_is_a(def_type, G_TYPE_STRING) )
-            str = g_value_get_string(def) ? g_value_get_string(def) : "NULL";
-        else if(g_type_is_a(def_type, G_TYPE_INT) )
-            str = std::to_string(g_value_get_int(def));
-        else if(g_type_is_a(def_type, G_TYPE_INT64) )
-            str = std::to_string(g_value_get_int64(def));
-        else if(g_type_is_a(def_type, G_TYPE_UINT) )
-            str = std::to_string(g_value_get_uint(def));
-        else if(g_type_is_a(def_type, G_TYPE_UINT64) )
-            str = std::to_string(g_value_get_uint64(def));
-        else if(g_type_is_a(def_type, G_TYPE_LONG) )
-            str = std::to_string(g_value_get_long(def));
-        else if(g_type_is_a(def_type, G_TYPE_ULONG) )
-            str = std::to_string(g_value_get_ulong(def));
-        else if(g_type_is_a(def_type, G_TYPE_FLOAT) )
-            str = std::to_string(g_value_get_float(def));
-        else if(g_type_is_a(def_type, G_TYPE_DOUBLE) )
-            str = std::to_string(g_value_get_double(def));
-        else if(g_type_is_a(def_type, G_TYPE_BOOLEAN) )
-            str = std::to_string(g_value_get_boolean(def));
-        // TODO: Add special enums / objects 
-
-        if(!str.empty())
-            property->addField("default", str, def_type); 
-
-        property->connect(sigc::mem_fun(*this, &ElementNode::updateProperty));
-        ptr->add(property);
-    }
-
-    g_free(props);
-
-    m_properties = ptr;
-    return ptr;
+    return m_element->getProperties();
 }
-bool ElementNode::updateProperty(Property* property, const std::string& updated_field, const std::string& updated_value)
+
+Gtk::Widget* ElementNode::createInfoWidget()
 {
-    printf("Property %s was updated: %s = %s\n", property->getName().c_str(), updated_field.c_str(), updated_value.c_str());
-    g_object_set(m_element->getBase(), property->getName().c_str(), updated_value.c_str(), NULL);
-    return true;
+    auto info_panel = Gtk::make_managed<Gtk::ListBox>();
+    info_panel->set_selection_mode(Gtk::SelectionMode::NONE);
+    info_panel->append(*Gtk::make_managed<Gtk::Label>(Glib::ustring::sprintf("Properties of %s", getName().c_str())));
+
+    auto properties = getProperties();
+    for (auto prop : properties) {
+        auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
+        box->set_spacing(8);
+
+        auto name = Gtk::make_managed<Gtk::Label>();
+        name->set_markup(Glib::ustring::sprintf("<i>%s</i>", prop->getName()));
+
+        auto default_value = prop->getValueAsString(Element::Property::ValueType::Default);
+        auto default_type  = prop->getTypeAsString();
+        auto value         = prop->getValueAsString();
+
+        name->set_tooltip_text(prop->getDescription());
+
+        auto entry = Gtk::make_managed<Gtk::Entry>();
+        entry->set_hexpand(true);
+        if (!value.empty())
+            entry->set_text(value);
+        entry->set_placeholder_text(default_value);
+        entry->set_tooltip_text(Glib::ustring::sprintf("Format: %s\t\tDefault: %s", default_type, default_value));
+
+        auto confirm_button = Gtk::make_managed<Gtk::Button>("Confirm");
+        confirm_button->set_sensitive(false);
+
+        entry->signal_changed().connect([confirm_button, entry, prop]() {
+            auto value = prop->getValueAsString();
+            if (value.empty())
+                confirm_button->set_sensitive(entry->get_text_length() != 0);
+            else
+                confirm_button->set_sensitive(std::string(entry->get_text()) != value);
+        });
+        confirm_button->signal_clicked().connect([confirm_button, entry, prop] {
+            prop->setValue(entry->get_text());
+            confirm_button->set_sensitive(false);
+        });
+
+        box->append(*name);
+        box->append(*entry);
+        box->append(*confirm_button);
+
+        info_panel->append(*box);
+    }
+    return info_panel;
 }
 
 Pad* ElementNode::searchForPeer(GstPad* pad)
 {
-    for(auto in : m_input_pads){
-        if(GST_PAD_PEER( pad ) == in->getBase()) return in;
+    for (auto in : m_input_pads) {
+        if (GST_PAD_PEER(pad) == in->getBase())
+            return in;
     }
-    for(auto out : m_output_pads){
-        if(GST_PAD_PEER( pad ) == out->getBase()) return out;
+    for (auto out : m_output_pads) {
+        if (GST_PAD_PEER(pad) == out->getBase())
+            return out;
     }
     return nullptr;
 }

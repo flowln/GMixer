@@ -1,68 +1,58 @@
 #include "gstreamer/Pipeline.h"
-#include "gstreamer/PipelineIO.h"
-#include "gstreamer/PipelineListModel.h"
 
 #include "signals/Pipelines.h"
 
-#include "client/gtk/PipelineEditor.h"
-#include "client/gtk/PipelineSelector.h"
 #include "client/gtk/HeaderBar.h"
 #include "client/gtk/MainWindow.h"
+#include "client/gtk/PipelineEditor.h"
+#include "client/gtk/PipelineListModel.h"
+#include "client/gtk/PipelineSelector.h"
 
-PipelineSelector* PipelineSelector::s_instance = nullptr;
+GtkClient* PipelineSelector::s_client = nullptr;
 
 PipelineSelector* PipelineSelector::create(MainWindow* main_window)
 {
-    if(s_instance)
-        return s_instance;
-
-    s_instance = new PipelineSelector(main_window);
-    return s_instance;
+    return new PipelineSelector(main_window);
 }
 
 Gtk::TreeModel::Path PipelineSelector::currentPath()
 {
-    if(!s_instance)
-        return {};
-
-    return s_instance->m_model->getModel()->get_path(s_instance->m_list.get_selection()->get_selected());
+    return s_client->pipelineStorageAgent()->getModel()->get_path(get_selection()->get_selected());
 }
 
 Pipeline* PipelineSelector::currentPipeline()
 {
-    return PipelineListModel::getPipeline(currentPath());
+    return s_client->pipelineStorageAgent()->getPipeline(currentPath()).lock().get();
 }
 
-PipelineSelector::PipelineSelector(MainWindow* main_window)
-    : m_main_window(main_window)
-    , m_model(PipelineListModel::create())
+PipelineSelector::PipelineSelector(MainWindow* main_window) : m_main_window(main_window)
 {
-    PipelineCreator::setMainWindow(main_window);
-    PipelineListModel::create();
+    if (!s_client)
+        s_client = static_cast<GtkClient*>(Client::instance());
 
-    m_list.set_size_request(100, -1);
-    m_list.set_vexpand(true);
-    
-    m_list.set_model(m_model->getModel());
-    //FIXME: Add CSS to center column header
-    m_list.append_column("Pipelines", m_model->getRecord().m_pipeline_name);
+    set_size_request(100, -1);
+    set_vexpand(true);
 
-    m_list.get_column(0)->set_fixed_width(m_list.get_width());
-    m_list.set_headers_visible(true);
-    m_list.set_activate_on_single_click(true);
+    auto storage = s_client->pipelineStorageAgent();
 
-    auto renderer = dynamic_cast<Gtk::CellRendererText*>(m_list.get_column_cell_renderer(0));
+    set_model(storage->getModel());
+    // FIXME: Add CSS to center column header
+    append_column("Pipelines", storage->getRecord().m_pipeline_name);
+
+    get_column(0)->set_fixed_width(get_width());
+    set_headers_visible(true);
+    set_activate_on_single_click(true);
+
+    auto renderer = static_cast<Gtk::CellRendererText*>(get_column_cell_renderer(0));
     renderer->property_ellipsize().set_value(Pango::EllipsizeMode::END);
     renderer->set_alignment(0.5, 0);
 
-    m_list.signal_row_activated().connect(
-        [](const Gtk::TreePath& path, Gtk::TreeViewColumn* const& column){ 
-            Signals::pipeline_selected().emit(currentPipeline()); 
-        });
-    Signals::pipeline_added().connect(
-        [this](const Gtk::TreePath& path){
-            m_list.get_selection()->select(path);
-            Signals::pipeline_selected().emit(currentPipeline()); 
-        });
-}
+    storage->signal_row_added.connect([&](Gtk::TreeIter<Gtk::TreeRow>& iter) {
+        get_selection()->select(iter);
+        Signals::pipeline_selected().emit(currentPipeline());
+    });
 
+    signal_row_activated().connect([&](const Gtk::TreePath& path, Gtk::TreeViewColumn* const& column) {
+        Signals::pipeline_selected().emit(currentPipeline());
+    });
+}

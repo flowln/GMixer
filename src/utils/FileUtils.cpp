@@ -1,9 +1,9 @@
-#include "gstreamer/FileUtils.h"
+#include "utils/FileUtils.h"
 
 #include <glibmm/keyfile.h>
 
 namespace FileUtils{
-    std::unique_ptr<file_info> parseFile(Glib::RefPtr<Gio::File> file)
+    std::shared_ptr<file_info> parseFile(Glib::RefPtr<Gio::File> file)
     {
         auto keyfile = Glib::KeyFile::create();
         
@@ -22,7 +22,7 @@ namespace FileUtils{
         gchar* name = g_strdup(keyfile->get_string("Basic", "Name").c_str());
         gchar* command = g_strdup(keyfile->get_string("Basic", "Command").c_str());
 
-        return std::make_unique<file_info>(name, command);
+        return std::make_shared<file_info>(name, command);
     }
 
     bool saveFile(const Glib::ustring& file, const file_info info)

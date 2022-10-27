@@ -1,23 +1,16 @@
-#include "gstreamer/FileUtils.h"
-#include "gstreamer/Pipeline.h"
-#include "gstreamer/PipelineIO.h"
-#include "gstreamer/PipelineListModel.h"
-#include "client/gtk/PipelineSelector.h"
+#include "client/gtk/Dialogs.h"
 
-#include <gtkmm/application.h>
 #include <gtkmm/dialog.h>
+#include <gtkmm/entry.h>
 #include <gtkmm/filechoosernative.h>
 #include <gtkmm/label.h>
-#include <gtkmm/entry.h>
-#include <gtkmm/boxlayout.h>
 
-//TODO: Move Gtk stuff out of backend/
+Gtk::Window* Dialog::s_main_window = nullptr;
+PipelineFactory* Dialog::s_factory = nullptr;
 
-Gtk::Window* PipelineCreator::s_main_window = nullptr;
-
-void PipelineCreator::createPipeline()
+void Dialog::createPipeline()
 {
-    if(!s_main_window)
+    if(!s_main_window || !s_factory)
         return;
 
     auto dialog = new Gtk::Dialog("Create a new pipeline", true, true);
@@ -52,18 +45,15 @@ void PipelineCreator::createPipeline()
     dialog->signal_response().connect(
         [dialog, name_entry](int response_id){
             if(response_id == GTK_RESPONSE_ACCEPT){
-                auto name = name_entry->get_text();
-                PipelineListModel::addPipeline(Glib::make_refptr_for_instance(PipelineFactory::createEmpty(name)));
+               s_factory->createEmptyPipeline(name_entry->get_text());
             }
 
             dialog->close();
         });
     
     dialog->show();
-
 }
-
-void PipelineCreator::createPipelineFromFile()
+void Dialog::importPipelineFromFile()
 {
     if(!s_main_window)
         return;
@@ -85,31 +75,9 @@ void PipelineCreator::createPipelineFromFile()
                 if(!data)
                     return;
     
-                PipelineListModel::addPipeline(Glib::make_refptr_for_instance(PipelineFactory::createFromString(data->name, data->command)));
+                s_factory->createPipelineFromData(data);
             }
         });
 
     dialog->show();
-}
-
-namespace PipelineSaver{
-    void saveCurrentPipeline()
-    {
-        auto current_path = PipelineSelector::currentPath();
-        if(!current_path)
-            return;
-
-        auto current_pipeline = PipelineListModel::getPipeline(current_path);
-        savePipeline(current_pipeline);
-    }
-
-    void savePipeline(Pipeline* pipeline)
-    {
-        if(!pipeline)
-            return;
-
-        FileUtils::file_info info {pipeline->getName().c_str(), pipeline->getCommand()};
-
-        FileUtils::saveFile(Glib::ustring::sprintf("~/Documents/%s.pipeline", pipeline->getName()), info);
-    }
 }

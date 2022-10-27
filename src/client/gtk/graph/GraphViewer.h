@@ -9,13 +9,14 @@
 
 //Forward-declaration
 class ElementNode;
-class PipelineGraph;
+class PipelineEditor;
 class Node;
+class Pad; 
 enum class OperationMode;
 
 class GraphViewer : public Gtk::DrawingArea {
     public:
-        GraphViewer(PipelineGraph* parent);
+        GraphViewer(PipelineEditor* parent);
 
         ElementNode* searchForElement(GstElement*);
         void addNode(Node* node);
@@ -35,16 +36,20 @@ class GraphViewer : public Gtk::DrawingArea {
         void beginCutOperation(double x, double y);
         void endCutOperation(double x, double y);
 
+        inline void pressedInSelectMode(unsigned int button, double x, double y);
+        inline void pressedInDeleteMode(double x, double y);
+
         static double cursor_pos_x, cursor_pos_y;
     private:
-        PipelineGraph* m_parent;
+        PipelineEditor* m_parent;
 
         Glib::RefPtr<Gtk::GestureClick> m_click_controller;
         Glib::RefPtr<Gtk::GestureDrag> m_drag_controller;
         Glib::RefPtr<Gtk::EventControllerMotion> m_motion_controller;
 
-        std::vector<Node*> m_nodes;
+        std::list<Node*> m_nodes;
         
+        Pad* m_linking_pad = nullptr;
         Node* m_selected_node = nullptr;
         int m_move_start_x, m_move_start_y;
         int m_cut_start_x, m_cut_start_y;

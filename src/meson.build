@@ -3,7 +3,8 @@ sources += files([
   'main.cpp',
 ])
 
-subdir('signals')
 subdir('client')
 subdir('gstreamer')
+subdir('signals')
+subdir('utils')
 

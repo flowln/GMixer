@@ -1,70 +1,124 @@
 #pragma once
 
-#include "client/gtk/graph/Property.h"
-
-#include <glibmm/ustring.h>
 #include <cairomm/cairomm.h>
+#include <glibmm/ustring.h>
+#include <gtkmm/widget.h>
 #include <forward_list>
 
-//Forward-declarations
+// Forward-declarations
 class GraphViewer;
 class Pad;
 class InputPad;
 class OutputPad;
 
+/** This class represents a node in a graph.
+ *  Such entity has a descriptive name and a coordinate in the graph
+ *  it belongs to, as well as a width and a height. By default it is
+ *  drawn as a rectangle, with the top-left corner as (0,0).
+ *  It relates to other nodes via input and/or output pads.
+ *  */
 class Node {
-    public:
-        Node(GraphViewer* parent, Glib::ustring name, int x, int y);
-        virtual ~Node() = default;
+   public:
+    Node(GraphViewer* parent, Glib::ustring name, double x, double y);
+    virtual ~Node() = default;
 
-        void setPosition(int new_x, int new_y);
+    /** Destroys the node and frees it. Use this method instead of `delete node;`.*/
+    void destroy();
 
-        void addInputPad(InputPad* pad);
-        void addOutputPad(OutputPad* pad);
-        std::vector<InputPad*>& getInputPads() { return m_input_pads; };
-        std::vector<OutputPad*>& getOutputPads() { return m_output_pads; };
-        Pad* selectedPad() const { return m_selected_pad; }
+    /** Set new position of the node, update its pads and update the node. */
+    void setPosition(double new_x, double new_y);
 
-        void onUpdateCallback(sigc::slot<void(void)> cb) { update_callback = cb; };
-        void onClick(double x, double y);
+    double getX() const { return m_x; }
+    double getY() const { return m_y; }
 
-        void draw(const Cairo::RefPtr<Cairo::Context>& cr) const;
-        bool isSelected() const { return m_is_selected; }
-        void select();
-        void deselect();
+    /** Set new size of the node, update its pads and update the node. */
+    void setSize(double new_width, double new_height);
 
-        Glib::ustring getName() const { return m_name.getName(); }
-        int getX() const { return m_x; }
-        int getY() const { return m_y; }
-        GraphViewer* getGraph() const { return m_parent; }
-        virtual GMixer::PropertyList* getProperties();
-        virtual bool updateProperty(GMixer::Property*, const std::string&, const std::string&){ return false; };
+    double getWidth() const { return m_width; }
+    double getHeight() const { return m_height; }
 
-        bool contains(double x, double y) const;
+    /** Add an input pad to the node's inputs.
+     *  Also automatically updates all the current
+     *  inputs geometries to accomodate the new one. */
+    void addInputPad(InputPad* pad);
 
-    protected:
-        void setSize(double new_width, double new_height);
-        void updateInputPadGeometry(InputPad*, int start_index = -1);
-        void updateOutputPadGeometry(OutputPad*, int start_index = -1);
+    /** Add an output pad to the node's outputs.
+     *  Also automatically updates all the current
+     *  outputs geometries to accomodate the new one. */
+    void addOutputPad(OutputPad* pad);
 
-        inline void drawInputs(const Cairo::RefPtr<Cairo::Context>& cr) const;
-        inline void drawOutputs(const Cairo::RefPtr<Cairo::Context>& cr) const;
-        inline void drawName(const Cairo::RefPtr<Cairo::Context>& cr) const;
+    /** Get the vector of the node's input pads. */
+    std::vector<InputPad*>& getInputPads() { return m_input_pads; };
 
-        int numOfInputs() const { return m_input_pads.size(); }
-        int numOfOutputs() const { return m_output_pads.size(); }
+    /** Get the vector of the node's output pads. */
+    std::vector<OutputPad*>& getOutputPads() { return m_output_pads; };
 
-        GraphViewer* m_parent;
+    /** Get the currently selected pad in the node, or nullptr if none is selected. */
+    Pad* selectedPad() const { return m_selected_pad; }
 
-        GMixer::Property m_name;
-        double m_x, m_y;
-        double m_width, m_height;
+    /** Set a callback for when the node is updated.
+     *  The node is updated when:
+     *      - It is selected / deselected.
+     *      - It's geometry changes (position or size).
+     *  */
+    void onUpdateCallback(sigc::slot<void(void)> cb) { update_callback = cb; };
 
-        bool m_is_selected = false;
+    /** Respond to a click event inside of the node at coordinate (x,y).
+     *  Possible outcomes are:
+     *      - A pad was clicked. In this case it will start / finish linking and return false.
+     *      - No pad was clicked. In this case the node will become selected and return true
+     *      only if it was not previously selected.
+     *
+     *  This function assumes the (x,y) is already inside the node's boundaries.
+     *  If (x,y) is outside on the node, the node will simply be selected as if was clicked outside of a pad.*/
+    bool onClick(double x, double y);
 
-        std::vector<InputPad*> m_input_pads;
-        std::vector<OutputPad*> m_output_pads;
-        Pad* m_selected_pad = nullptr;
+    /** Checks if (x,y) is inside the node's boundaries. */
+    bool contains(double x, double y) const;
 
-        sigc::slot<void(void)> update_callback;
+    /** Draws the node and tell all its pads to draw themselves (thorough their draw() interface). */
+    void draw(const Cairo::RefPtr<Cairo::Context>& cr) const;
+
+    /** Creates a Gtk::Box with information about the widget. May have fields that can change properties of the node,
+     *  such as a property configuration panel. */
+    virtual Gtk::Widget* createInfoWidget() { return nullptr; };
+
+    /** Deselects a node. If it was not selected, this does nothing. */
+    void deselect();
+
+    /** Stop linking if it has a linking pad. Does nothing otherwise. */
+    void stopLinking();
+
+    bool isSelected() const { return m_is_selected; }
+
+    Glib::ustring getName() const { return m_name; }
+    GraphViewer* getGraph() const { return m_parent; }
+
+   protected:
+    /* To try to select a node, use onClick.*/
+    void select();
+
+    void updateInputPadGeometry(InputPad*, int start_index = -1);
+    void updateOutputPadGeometry(OutputPad*, int start_index = -1);
+
+    inline void drawInputs(const Cairo::RefPtr<Cairo::Context>& cr) const;
+    inline void drawOutputs(const Cairo::RefPtr<Cairo::Context>& cr) const;
+    inline void drawName(const Cairo::RefPtr<Cairo::Context>& cr) const;
+
+    int numOfInputs() const { return m_input_pads.size(); }
+    int numOfOutputs() const { return m_output_pads.size(); }
+
+    GraphViewer* m_parent;
+
+    std::string m_name;
+    double m_x, m_y;
+    double m_width, m_height;
+
+    bool m_is_selected = false;
+
+    std::vector<InputPad*> m_input_pads;
+    std::vector<OutputPad*> m_output_pads;
+    Pad* m_selected_pad = nullptr;
+
+    sigc::slot<void(void)> update_callback;
 };

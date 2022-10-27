@@ -1,5 +1,12 @@
 sources += files([
-  'GtkClient.cpp'
+  'Client.cpp'
 ])
 
-subdir('gtk')
+subdir('cmd')
+subdir('common')
+
+if get_option('gtk')
+  sources += files(['GtkClient.cpp'])
+  subdir('gtk')
+endif
+

@@ -1,4 +1,3 @@
-#include "signals/Graph.h"
 #include "client/gtk/graph/Node.h"
 #include "client/gtk/graph/Pad.h"
 #include "client/gtk/graph/GraphViewer.h"
@@ -6,11 +5,20 @@
 #define node_to_pad_width   0.1
 #define node_to_pad_height  0.2
 
-using namespace GMixer;
-
 void Node::deselect()
 { 
+    if(!m_is_selected)
+        return;
     m_is_selected = false; 
+    stopLinking();
+
+    update_callback();
+}
+void Node::stopLinking()
+{
+    if(!m_selected_pad)
+        return;
+
     m_selected_pad = nullptr;
 
     for(int i = numOfInputs() - 1; i >= 0; i--)
@@ -21,17 +29,11 @@ void Node::deselect()
 void Node::select()
 { 
     m_is_selected = true; 
-    Signals::node_selected().emit(this);
+
+    update_callback();
 }
 
-PropertyList* Node::getProperties() 
-{
-    auto ptr = new PropertyList();
-    ptr->add(&m_name);
-    return ptr;
-}
-
-Node::Node(GraphViewer* parent, Glib::ustring name, int x, int y)
+Node::Node(GraphViewer* parent, Glib::ustring name, double x, double y)
     : m_parent(parent)
     , m_name(name)
 {
@@ -39,7 +41,21 @@ Node::Node(GraphViewer* parent, Glib::ustring name, int x, int y)
     setPosition(x, y);
 }
 
-void Node::setPosition(int new_x, int new_y)
+void Node::destroy()
+{
+    deselect();
+    stopLinking();
+    for(auto pad : m_input_pads){
+        pad->destroy();
+    }
+    for(auto pad : m_output_pads){
+        pad->destroy();
+    }
+
+    delete this;
+}
+
+void Node::setPosition(double new_x, double new_y)
 {
     m_x = new_x;
     m_y = new_y;
@@ -65,26 +81,42 @@ void Node::addOutputPad(OutputPad* pad)
         updateOutputPadGeometry(m_output_pads.at(i), i); 
 }
 
-void Node::onClick(double x, double y)
+bool Node::onClick(double x, double y)
 {
-    select();
+    Pad* selected_pad = nullptr;
 
-    if(x <= m_x + 0.1*m_width){
-        InputPad* closest = m_input_pads.at(0);
+    // Check if one input pad was clicked
+    if(x <= m_x + node_to_pad_width*m_width){
         for(auto in : m_input_pads){
-            closest = (closest->lastY() - y) < (in->lastY() - y) ? closest : in;
+            if(!in->contains(x, y)) continue;
+
+            selected_pad = in;
+            break;
         }
-        closest->stageLinking();
-        m_selected_pad = closest;
     }
-    else if(x >= m_x + 0.9*m_width){
-        OutputPad* closest = m_output_pads.at(0);
+
+    // Check if one output pad was clicked
+    else if(x >= m_x + (1-node_to_pad_width)*m_width){
         for(auto out : m_output_pads){
-            closest = (closest->lastY() - y) < (out->lastY() - y) ? closest : out;
+            if(!out->contains(x, y)) continue;
+            
+            selected_pad = out;
+            break;
         }
-        closest->stageLinking();
-        m_selected_pad = closest;
     }
+
+    // If no pad was clicked
+    if(!selected_pad){
+        if(!isSelected()){
+            select();
+            return true;
+        }
+        return false;
+    }
+
+    selected_pad->stageLinking();
+    m_selected_pad = selected_pad;
+    return false;
 }
 
 void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
@@ -102,11 +134,11 @@ void Node::draw(const Cairo::RefPtr<Cairo::Context> &cr) const
     
     if(numOfInputs() > 0){
         for(auto in : m_input_pads)
-            in->draw(cr);
+            in->draw(cr, in->contains(m_parent->cursor_pos_x, m_parent->cursor_pos_y));
     }
     if(numOfOutputs() > 0){
         for(auto out : m_output_pads)
-            out->draw(cr);
+            out->draw(cr, out->contains(m_parent->cursor_pos_x, m_parent->cursor_pos_y));
     }
 
     cr->save();    // Pre-border
@@ -156,7 +188,7 @@ void Node::updateInputPadGeometry(InputPad* pad, int start_index)
     double step = m_height / (numOfInputs() + 1);
     int i = start_index >= 0 ? start_index : numOfInputs() - 1;
     for(; i >= 0; i--) if(m_input_pads.at(i) == pad) break;
-    pad->setPosition(m_x + m_width * node_to_pad_width / 2, m_y + (i+1)*step);
+    pad->setPosition(m_x, m_y + (i+1)*step - m_height * node_to_pad_height / 2);
 }
 void Node::updateOutputPadGeometry(OutputPad* pad, int start_index)
 {
@@ -165,7 +197,7 @@ void Node::updateOutputPadGeometry(OutputPad* pad, int start_index)
     double step = m_height / (numOfOutputs() + 1);
     int i = start_index >= 0 ? start_index : numOfOutputs() - 1;
     for(; i >= 0; i--) if(m_output_pads.at(i) == pad) break;
-    pad->setPosition(m_x + m_width - m_width * node_to_pad_width / 2, m_y + (i+1)*step);
+    pad->setPosition(m_x + m_width - m_width * node_to_pad_width, m_y + (i+1)*step - m_height * node_to_pad_height / 2);
 }
 
 inline void Node::drawName(const Cairo::RefPtr<Cairo::Context>& cr) const
