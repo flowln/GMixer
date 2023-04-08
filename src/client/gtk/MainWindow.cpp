@@ -8,27 +8,33 @@
 
 #include "signals/Pipelines.h"
 
-static void changePipelineEditor(MainWindow* window, Pipeline* selected)
-{
-    auto& editors = window->getEditors();
+#include <gtkmm/grid.h>
+#include <gtkmm/paned.h>
 
+void MainWindow::changePipelineEditor(Pipeline* selected)
+{
     // Search for an editor connected to the selected pipeline
-    for (auto editor : editors) {
-        if (editor->getPipeline() == selected) {
-            window->attachEditor(*editor);
-            return;
-        }
+    auto editor_it = std::find_if(m_editors.cbegin(), m_editors.cend(), [selected](auto const& p) { return p->getPipeline() == selected; });
+    if (editor_it != m_editors.cend()) {
+        attachEditor(**editor_it);
+        return;
     }
 
     // Create a new editor for this new pipeline
-    auto editor = new PipelineEditor(*window, selected);
-    editors.push_back(editor);
+    auto editor = std::make_shared<PipelineEditor>(*this, selected);
+    m_editors.push_back(editor);
 
     // Select the newly created pipeline's editor
-    window->attachEditor(*editor);
+    attachEditor(*editor);
 }
 
-MainWindow::MainWindow() : m_main_container()
+void MainWindow::attachEditor(PipelineEditor& editor)
+{
+    m_right_container->set_start_child(editor);
+}
+
+MainWindow::MainWindow()
+    : m_main_container(new Gtk::Grid), m_right_container(new Gtk::Paned(Gtk::Orientation::VERTICAL))
 {
     // Set own attributes
     set_title("GMixer");
@@ -40,27 +46,16 @@ MainWindow::MainWindow() : m_main_container()
     Dialog::setFactory(PipelineFactory::create());
 
     // Create child widgets
-    auto element_selector  = ElementSelector::create(this);
     auto pipeline_selector = PipelineSelector::create(this);
+    m_main_container->attach(*pipeline_selector, 0, 0, 1, 1);
 
-    m_main_container.attach(*element_selector, 1, 1, 1, 1);
-    m_main_container.attach(*pipeline_selector, 0, 0, 1, 2);
+    auto element_selector  = ElementSelector::create(this);
+    m_right_container->set_end_child(*element_selector);
 
-    set_child(m_main_container);
+    m_main_container->attach(*m_right_container, 1, 0, 1, 1);
+
+    set_child(*m_main_container);
 
     // Setup signals
-    Signals::pipeline_selected().connect([this](Pipeline* selected) { changePipelineEditor(this, selected); });
-}
-MainWindow::~MainWindow()
-{
-    for (auto editor : m_editors)
-        delete editor;
-}
-
-void MainWindow::attachEditor(PipelineEditor& editor)
-{
-    auto last_child = m_main_container.get_child_at(1, 0);
-    if (last_child)
-        m_main_container.remove(*last_child);
-    m_main_container.attach(editor, 1, 0, 1, 1);
+    Signals::pipeline_selected().connect([this](Pipeline* selected) { changePipelineEditor(selected); });
 }

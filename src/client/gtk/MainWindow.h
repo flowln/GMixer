@@ -1,21 +1,27 @@
 #pragma once
 
-#include <gtkmm/grid.h>
 #include <gtkmm/window.h>
 
 //Forward-declarations
 class ElementSelector;
 class PipelineEditor;
 class PipelineSelector;
+class Pipeline;
 
-class MainWindow : public Gtk::Window {
+namespace Gtk {
+class Grid;
+class Paned;
+}
+
+class MainWindow final : public Gtk::Window {
     public:
         MainWindow();
-        ~MainWindow();
 
+        void changePipelineEditor(Pipeline* selected);
         void attachEditor(PipelineEditor& editor);
-        std::vector<PipelineEditor*>& getEditors() { return m_editors; }
     private: 
-        Gtk::Grid m_main_container;
-        std::vector<PipelineEditor*> m_editors;
+        std::shared_ptr<Gtk::Grid> m_main_container;
+        std::shared_ptr<Gtk::Paned> m_right_container;
+
+        std::vector<std::shared_ptr<PipelineEditor>> m_editors;
 }; 

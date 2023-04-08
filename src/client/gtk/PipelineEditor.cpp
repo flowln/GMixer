@@ -15,6 +15,8 @@
 PipelineEditor::PipelineEditor(Gtk::Widget& parent, Pipeline* pipeline)
     : Gtk::Paned(), m_pipeline(pipeline), m_graph(this), m_info(*this)
 {
+    set_size_request(-1, 600);
+
     set_start_child(m_graph);
     set_end_child(m_info);
 
