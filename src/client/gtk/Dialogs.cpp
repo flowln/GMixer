@@ -25,6 +25,7 @@ void Dialog::createPipeline()
     auto name_entry = Gtk::make_managed<Gtk::Entry>();
     name_entry->set_hexpand(true);
     name_entry->set_placeholder_text("...");
+    name_entry->set_activates_default(true);
     dialog->get_content_area()->append(*name_entry);
 
     auto close_button = Gtk::make_managed<Gtk::Button>("Cancel");
@@ -33,6 +34,8 @@ void Dialog::createPipeline()
     auto create_button = Gtk::make_managed<Gtk::Button>("Create");
     create_button->set_sensitive(false);
     dialog->add_action_widget(*create_button, GTK_RESPONSE_ACCEPT);
+
+    dialog->set_default_response(GTK_RESPONSE_ACCEPT);
 
     name_entry->signal_changed().connect(
         [create_button, name_entry](){
