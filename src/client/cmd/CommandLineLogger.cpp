@@ -1,12 +1,23 @@
 #include "client/cmd/CommandLineLogger.h"
+
 #include <exception>
 
 CommandLineLogger::CommandLineLogger(Logger::LoggingLevel level) : Logger(level) {}
 
 static const char* end_message   = "\033[0;39m\n";
+static const char* debug_color   = "\033[35m";
 static const char* info_color    = "\033[34m";
 static const char* warning_color = "\033[33m";
 static const char* error_color   = "\033[31m";
+
+bool CommandLineLogger::sendDebug(std::string&& message) const
+{
+    if (!Logger::sendDebug(""))
+        return false;
+
+    printf("%s[DEBUG] %s %s", debug_color, message.c_str(), end_message);
+    return true;
+}
 
 bool CommandLineLogger::sendInfo(std::string&& message) const
 {

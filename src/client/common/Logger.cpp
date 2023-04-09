@@ -1,5 +1,9 @@
 #include "client/common/Logger.h"
 
+bool Logger::sendDebug(std::string&&) const
+{
+    return m_level <= LoggingLevel::DEBUG;
+}
 bool Logger::sendInfo(std::string&&) const
 {
     return m_level <= LoggingLevel::INFO;

@@ -7,11 +7,12 @@
 class Logger {
    public:
     /* Greater value = More restrict logging */
-    enum class LoggingLevel { EVERYTHING = 0, INFO = 10, WARNING = 20, ERROR = 30, NOTHING = 40 };
+    enum class LoggingLevel { EVERYTHING = 0, DEBUG = 20, INFO = 40, WARNING = 60, ERROR = 80, NOTHING = 100 };
 
     Logger(LoggingLevel level = LoggingLevel::WARNING) : m_level(level){};
     virtual ~Logger() = default;
 
+    virtual bool sendDebug(std::string&&) const;
     virtual bool sendInfo(std::string&&) const;
     virtual bool sendWarning(std::string&&) const;
     virtual bool sendError(std::string&&, std::exception* exception = nullptr) const;
