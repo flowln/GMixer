@@ -75,7 +75,6 @@ ElementSelector::ElementSelector(Gtk::Window* parent) : Gtk::Notebook(), m_paren
         }
     });
 
-    // NOTE: This needs to be after the insert_page lines, to prevent some weird stuff with widget roots that happens to cause crashes.
     source_list->populate();
 }
 

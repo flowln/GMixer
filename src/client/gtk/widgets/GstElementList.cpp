@@ -11,11 +11,14 @@
 
 #include <giomm/liststore.h>
 
+#include <gtkmm/entry.h>
 #include <gtkmm/expression.h>
+#include <gtkmm/filterlistmodel.h>
 #include <gtkmm/label.h>
 #include <gtkmm/signallistitemfactory.h>
 #include <gtkmm/singleselection.h>
 #include <gtkmm/sortlistmodel.h>
+#include <gtkmm/stringfilter.h>
 #include <gtkmm/stringsorter.h>
 
 #include <cassert>
@@ -41,8 +44,34 @@ class ElementListModel : public ElementStorage {
         }
 
         return m_elements->get_n_items();
-    };
-    [[nodiscard]] auto& getSelectionModel() const { return m_wrapper_model; };
+    }
+    [[nodiscard]] auto& getSelectionModel() const { return m_wrapper_model; }
+    [[nodiscard]] auto& getSortModel() const { return m_sort_model; }
+    [[nodiscard]] auto& getFilterModel() const { return m_filter_model; }
+
+    void setSortModel(Glib::RefPtr<Gtk::SortListModel> model)
+    {
+        m_sort_model = model;
+
+        getSelectionModel()->set_model(model);
+
+        if (getFilterModel())
+            model->set_model(getFilterModel());
+        else
+            model->set_model(m_elements);
+    }
+
+    void setFilterModel(Glib::RefPtr<Gtk::FilterListModel> model)
+    {
+        m_filter_model = model;
+
+        if (getSortModel())
+            getSortModel()->set_model(model);
+        else
+            getSelectionModel()->set_model(model);
+
+        model->set_model(m_elements);
+    }
 
     [[nodiscard]] std::string const& getElementName(unsigned int index) const override
     {
@@ -229,43 +258,56 @@ class ElementListModel : public ElementStorage {
     Glib::RefPtr<Gio::ListStore<Element>> m_elements      = nullptr;
     Glib::RefPtr<Gio::ListStore<Element>> m_temp_elements = nullptr;
 
+    Glib::RefPtr<Gtk::SortListModel> m_sort_model     = nullptr;
+    Glib::RefPtr<Gtk::FilterListModel> m_filter_model = nullptr;
+
     Glib::RefPtr<Gtk::SingleSelection> m_wrapper_model = nullptr;
 
     friend class ElementList;
 };
 
-ElementList::ElementList(ElementType type) : Gtk::ScrolledWindow(), m_view(new Gtk::ColumnView())
+auto name_closure_expr(Glib::RefPtr<Glib::ObjectBase> const& item)
+{
+    auto element = std::dynamic_pointer_cast<ElementListModel::Element>(item);
+    return element->name;
+}
+
+auto plugin_closure_expr(Glib::RefPtr<Glib::ObjectBase> const& item)
+{
+    auto element = std::dynamic_pointer_cast<ElementListModel::Element>(item);
+    return element->plugin;
+}
+
+auto package_closure_expr(Glib::RefPtr<Glib::ObjectBase> const& item)
+{
+    auto element = std::dynamic_pointer_cast<ElementListModel::Element>(item);
+    return element->package;
+}
+
+ElementList::ElementList(ElementType type)
+    : Gtk::Box(Gtk::Orientation::VERTICAL), m_view(new Gtk::ColumnView())
 {
     set_size_request(400, 200);
 
     m_model = std::unique_ptr<ElementListModel>(ElementListModel::create(type));
-    
+
     auto name_column = Gtk::ColumnViewColumn::create("Element", m_model->createNameElementFactory());
     {
-        auto expression = Gtk::ClosureExpression<Glib::ustring>::create([](auto const& item) {
-            auto element = std::dynamic_pointer_cast<ElementListModel::Element>(item);
-            return element->name;
-        });
+        auto expression = Gtk::ClosureExpression<Glib::ustring>::create(name_closure_expr);
         name_column->set_sorter(Gtk::StringSorter::create(expression));
     }
     m_view->append_column(name_column);
 
     auto plugin_column = Gtk::ColumnViewColumn::create("Plugin", m_model->createPluginElementFactory());
     {
-        auto expression = Gtk::ClosureExpression<Glib::ustring>::create([](auto const& item) {
-            auto element = std::dynamic_pointer_cast<ElementListModel::Element>(item);
-            return element->plugin;
-        });
+        auto expression = Gtk::ClosureExpression<Glib::ustring>::create(plugin_closure_expr);
         plugin_column->set_sorter(Gtk::StringSorter::create(expression));
     }
     m_view->append_column(plugin_column);
 
     auto package_column = Gtk::ColumnViewColumn::create("Package", m_model->createPackageElementFactory());
     {
-        auto expression = Gtk::ClosureExpression<Glib::ustring>::create([](auto const& item) {
-            auto element = std::dynamic_pointer_cast<ElementListModel::Element>(item);
-            return element->package;
-        });
+        auto expression = Gtk::ClosureExpression<Glib::ustring>::create(package_closure_expr);
         package_column->set_sorter(Gtk::StringSorter::create(expression));
     }
     m_view->append_column(package_column);
@@ -274,13 +316,38 @@ ElementList::ElementList(ElementType type) : Gtk::ScrolledWindow(), m_view(new G
     m_view->sort_by_column(name_column, Gtk::SortType::ASCENDING);
 
     m_view->set_model(m_model->getSelectionModel());
-    m_model->finished_populating.connect([this]{ 
-        // View -> Selection Model -> Sort List Model -> List Store
-        auto sort_list_model = Gtk::SortListModel::create(m_model->m_elements, m_view->get_sorter());
-        m_model->getSelectionModel()->set_model(sort_list_model);
+    m_model->finished_populating.connect([this] {
+        // View -> Selection Model -> Filter List Model -> Sort List Model -> List Store
+
+        auto expression = Gtk::ClosureExpression<Glib::ustring>::create([](auto const& item) {
+            return Glib::ustring::format(name_closure_expr(item), plugin_closure_expr(item),
+                                         package_closure_expr(item));
+        });
+        auto filter_list_model =
+            Gtk::FilterListModel::create(m_model->m_elements, Gtk::StringFilter::create(expression));
+        auto sort_list_model = Gtk::SortListModel::create(filter_list_model, m_view->get_sorter());
+
+        m_model->setFilterModel(filter_list_model);
+        m_model->setSortModel(sort_list_model);
     });
 
     m_view->add_css_class("data-table");
+    m_view->set_expand(true);
+
+    m_window.set_child(*m_view);
+
+    auto search_field = Gtk::make_managed<Gtk::Entry>();
+    search_field->set_margin(4);
+    search_field->set_placeholder_text("Search...");
+    search_field->signal_changed().connect([this, search_field] {
+        if (!m_model->getFilterModel())
+            return;
+        std::static_pointer_cast<Gtk::StringFilter>(m_model->getFilterModel()->get_filter())
+            ->set_search(search_field->get_text());
+    });
+
+    append(*search_field);
+    append(m_window);
 }
 
 std::string ElementList::getCurrentElementName() const
@@ -301,9 +368,6 @@ std::string ElementList::getCurrentElementPackage() const
 void ElementList::populate()
 {
     m_model->populate(false);
-
-    // NOTE: This must not be in the ctor to prevent some crashes. This seems the most appropriate other place.
-    set_child(*m_view);
 }
 
 void ElementList::when_selection_changed(std::function<void(guint)> cb)
