@@ -1,7 +1,6 @@
 sources += files([
   'MainWindow.cpp',
   'HeaderBar.cpp',
-  'ElementListModel.cpp',
   'ElementSelector.cpp',
   'PipelineEditor.cpp',
   'PipelineListModel.cpp',
@@ -10,3 +9,4 @@ sources += files([
 ])
 
 subdir('graph')
+subdir('widgets')

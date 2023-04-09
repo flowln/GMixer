@@ -5,8 +5,10 @@
 
 #include "client/gtk/ElementSelector.h"
 #include "client/gtk/MainWindow.h"
-#include "client/gtk/PipelineSelector.h"
 
+#include "client/gtk/widgets/GstElementList.h"
+
+#include <gtkmm/button.h>
 #include <gtkmm/paned.h>
 
 ElementSelector* ElementSelector::create(MainWindow* parent)
@@ -21,15 +23,9 @@ ElementSelector::ElementSelector(Gtk::Window* parent) : Gtk::Notebook(), m_paren
     source_page->set_shrink_end_child(false);
 
     auto source_list = Gtk::make_managed<ElementList>(ElementType::SOURCE);
-    source_list->append_column("Element", source_list->getModelRecord().m_element_name);
-    source_list->append_column("Plugin", source_list->getModelRecord().m_plugin);
-    source_list->append_column("Package", source_list->getModelRecord().m_package);
-    source_list->setAllSearchable();
-    source_list->populate();
 
     auto source_info = Gtk::make_managed<SelectedInfoPanel>(source_list);
-    source_list->getSelection().signal_changed().connect(
-        sigc::mem_fun(*source_info, &SelectedInfoPanel::selectionChanged));
+    source_list->when_selection_changed(sigc::mem_fun(*source_info, &SelectedInfoPanel::selectionChanged));
 
     source_page->set_start_child(*source_list);
     source_page->set_end_child(*source_info);
@@ -39,14 +35,9 @@ ElementSelector::ElementSelector(Gtk::Window* parent) : Gtk::Notebook(), m_paren
     filter_page->set_shrink_end_child(false);
 
     auto filter_list = Gtk::make_managed<ElementList>(ElementType::FILTER);
-    filter_list->append_column("Element", filter_list->getModelRecord().m_element_name);
-    filter_list->append_column("Plugin", filter_list->getModelRecord().m_plugin);
-    filter_list->append_column("Package", filter_list->getModelRecord().m_package);
-    filter_list->setAllSearchable();
 
     auto filter_info = Gtk::make_managed<SelectedInfoPanel>(filter_list);
-    filter_list->getSelection().signal_changed().connect(
-        sigc::mem_fun(*filter_info, &SelectedInfoPanel::selectionChanged));
+    filter_list->when_selection_changed(sigc::mem_fun(*filter_info, &SelectedInfoPanel::selectionChanged));
 
     filter_page->set_start_child(*filter_list);
     filter_page->set_end_child(*filter_info);
@@ -56,13 +47,9 @@ ElementSelector::ElementSelector(Gtk::Window* parent) : Gtk::Notebook(), m_paren
     sink_page->set_shrink_end_child(false);
 
     auto sink_list = Gtk::make_managed<ElementList>(ElementType::SINK);
-    sink_list->append_column("Element", sink_list->getModelRecord().m_element_name);
-    sink_list->append_column("Plugin", sink_list->getModelRecord().m_plugin);
-    sink_list->append_column("Package", sink_list->getModelRecord().m_package);
-    sink_list->setAllSearchable();
 
     auto sink_info = Gtk::make_managed<SelectedInfoPanel>(sink_list);
-    sink_list->getSelection().signal_changed().connect(sigc::mem_fun(*sink_info, &SelectedInfoPanel::selectionChanged));
+    sink_list->when_selection_changed(sigc::mem_fun(*sink_info, &SelectedInfoPanel::selectionChanged));
 
     sink_page->set_start_child(*sink_list);
     sink_page->set_end_child(*sink_info);
@@ -87,31 +74,10 @@ ElementSelector::ElementSelector(Gtk::Window* parent) : Gtk::Notebook(), m_paren
                 break;
         }
     });
+
+    // NOTE: This needs to be after the insert_page lines, to prevent some weird stuff with widget roots that happens to cause crashes.
+    source_list->populate();
 }
-
-std::string ElementSelector::getSelectedElement()
-{
-    auto curr_page = dynamic_cast<Gtk::Paned*>(get_nth_page(get_current_page()));
-    if (!curr_page)
-        return {};
-
-    return static_cast<SelectedInfoPanel*>(curr_page->get_end_child())->getSelectedElementName();
-}
-
-ElementList::ElementList(ElementType type) : Gtk::ScrolledWindow()
-{
-    set_size_request(400, 200);
-
-    m_model = std::unique_ptr<ElementListModel>(ElementListModel::create(type));
-    m_view  = std::make_unique<Gtk::TreeView>(m_model->getModel());
-    m_view->set_enable_search(true);
-    set_child(*m_view);
-}
-
-ElementRecord& ElementList::getModelRecord() const
-{
-    return m_model->getRecord();
-};
 
 SelectedInfoPanel::OptionalInfo::OptionalInfo(std::string&& title) : Gtk::Expander()
 {
@@ -122,7 +88,7 @@ SelectedInfoPanel::OptionalInfo::OptionalInfo(std::string&& title) : Gtk::Expand
 }
 
 SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
-    : Gtk::Stack(), m_list(associated_list), m_not_selected("No element is selected.")
+    : Gtk::Stack(), m_element_list(associated_list), m_not_selected("No element is selected.")
 {
     set_size_request(300, -1);
 
@@ -142,7 +108,8 @@ SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
     add_button->set_sensitive(false);
     Signals::pipeline_selected().connect(
         [add_button](Pipeline* selected) { add_button->set_sensitive(selected != nullptr); });
-    add_button->signal_clicked().connect([this] { Signals::element_add().emit(getSelectedElementName()); });
+    add_button->signal_clicked().connect(
+        [this] { Signals::element_add().emit(m_element_list->getCurrentElementName()); });
     m_selected_info_box->append(*add_button);
 
     add(*m_selected_info_box, "selected");
@@ -150,19 +117,10 @@ SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
 
     set_visible_child("not_selected");
 }
-std::string SelectedInfoPanel::getSelectedPluginName() const
-{
-    return m_list->getSelection().get_selected()->get_value(m_list->getModelRecord().m_plugin);
-}
 
-std::string SelectedInfoPanel::getSelectedElementName() const
+void SelectedInfoPanel::selectionChanged(guint /* current selection index */)
 {
-    return m_list->getSelection().get_selected()->get_value(m_list->getModelRecord().m_element_name);
-}
-
-void SelectedInfoPanel::selectionChanged()
-{
-    auto plugin_name = getSelectedPluginName();
+    auto plugin_name = m_element_list->getCurrentElementPluginName();
     auto plugin_info = ElementUtils::getPluginInfo(plugin_name);
 
     m_plugin_name.set_text(Glib::ustring::sprintf("\tName: %s", plugin_name));
@@ -170,7 +128,7 @@ void SelectedInfoPanel::selectionChanged()
     m_plugin_version.set_text(Glib::ustring::sprintf("\tVersion: %s", plugin_info->version));
     m_plugin_license.set_text(Glib::ustring::sprintf("\tLicense: %s", plugin_info->license));
 
-    auto element_name = getSelectedElementName();
+    auto element_name = m_element_list->getCurrentElementName();
     auto element_info = ElementUtils::getElementInfo(element_name);
 
     m_name.set_text(Glib::ustring::sprintf("\tName: %s", element_name));

@@ -34,7 +34,7 @@ void MainWindow::attachEditor(PipelineEditor& editor)
 }
 
 MainWindow::MainWindow()
-    : m_main_container(new Gtk::Grid), m_right_container(new Gtk::Paned(Gtk::Orientation::VERTICAL))
+    : Gtk::Window(), m_right_container(new Gtk::Paned(Gtk::Orientation::VERTICAL))
 {
     // Set own attributes
     set_title("GMixer");
@@ -45,16 +45,17 @@ MainWindow::MainWindow()
     Dialog::setMainWindow(this);
     Dialog::setFactory(PipelineFactory::create());
 
-    // Create child widgets
+    auto main_container = Gtk::make_managed<Gtk::Grid>();
+
     auto pipeline_selector = PipelineSelector::create(this);
-    m_main_container->attach(*pipeline_selector, 0, 0, 1, 1);
+    main_container->attach(*pipeline_selector, 0, 0, 1, 1);
+
+    main_container->attach(*m_right_container, 1, 0, 1, 1);
 
     auto element_selector  = ElementSelector::create(this);
     m_right_container->set_end_child(*element_selector);
 
-    m_main_container->attach(*m_right_container, 1, 0, 1, 1);
-
-    set_child(*m_main_container);
+    set_child(*main_container);
 
     // Setup signals
     Signals::pipeline_selected().connect([this](Pipeline* selected) { changePipelineEditor(selected); });
