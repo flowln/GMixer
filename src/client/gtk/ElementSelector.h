@@ -41,6 +41,9 @@ class SelectedInfoPanel : public Gtk::Stack {
         {
             widg->set_xalign(0);
 
+            widg->set_wrap(true);
+            widg->set_wrap_mode(Pango::WrapMode::WORD);
+
             append(widg);
             appendMany(widgs...);
         }

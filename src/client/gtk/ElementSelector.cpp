@@ -95,12 +95,15 @@ SelectedInfoPanel::SelectedInfoPanel(ElementList* associated_list)
     m_selected_info_box->set_selection_mode(Gtk::SelectionMode::NONE);
 
     m_element_info.appendMany(&m_name, &m_description, &m_author);
+    m_element_info.set_expanded(true);
     m_selected_info_box->append(m_element_info);
 
     m_plugin_info.appendMany(&m_plugin_name, &m_plugin_description, &m_plugin_version, &m_plugin_license);
+    m_plugin_info.set_expanded(true);
     m_selected_info_box->append(m_plugin_info);
 
     m_pads_info.appendMany(&m_src_num, &m_src_caps, &m_sink_num, &m_sink_caps);
+    m_pads_info.set_expanded(false);
     m_selected_info_box->append(m_pads_info);
 
     auto add_button = Gtk::make_managed<Gtk::Button>("Add");
