@@ -21,6 +21,7 @@ ElementSelector::ElementSelector(Gtk::Window* parent) : Gtk::Notebook(), m_paren
     auto source_page = Gtk::make_managed<Gtk::Paned>();
     source_page->set_shrink_start_child(false);
     source_page->set_shrink_end_child(false);
+    source_page->set_wide_handle(true);
 
     auto source_list = Gtk::make_managed<ElementList>(ElementType::SOURCE);
 
@@ -33,6 +34,7 @@ ElementSelector::ElementSelector(Gtk::Window* parent) : Gtk::Notebook(), m_paren
     auto filter_page = Gtk::make_managed<Gtk::Paned>();
     filter_page->set_shrink_start_child(false);
     filter_page->set_shrink_end_child(false);
+    filter_page->set_wide_handle(true);
 
     auto filter_list = Gtk::make_managed<ElementList>(ElementType::FILTER);
 
@@ -45,6 +47,7 @@ ElementSelector::ElementSelector(Gtk::Window* parent) : Gtk::Notebook(), m_paren
     auto sink_page = Gtk::make_managed<Gtk::Paned>();
     sink_page->set_shrink_start_child(false);
     sink_page->set_shrink_end_child(false);
+    sink_page->set_wide_handle(true);
 
     auto sink_list = Gtk::make_managed<ElementList>(ElementType::SINK);
 
