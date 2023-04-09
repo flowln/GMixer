@@ -12,10 +12,22 @@ class Logger {
     Logger(LoggingLevel level = LoggingLevel::WARNING) : m_level(level){};
     virtual ~Logger() = default;
 
-    virtual bool sendDebug(std::string&&) const;
-    virtual bool sendInfo(std::string&&) const;
-    virtual bool sendWarning(std::string&&) const;
-    virtual bool sendError(std::string&&, std::exception* exception = nullptr) const;
+    virtual bool sendDebug(std::string&&) const
+    {
+        return m_level <= LoggingLevel::DEBUG;
+    }
+    virtual bool sendInfo(std::string&&) const
+    {
+        return m_level <= LoggingLevel::INFO;
+    }
+    virtual bool sendWarning(std::string&&) const
+    {
+        return m_level <= LoggingLevel::WARNING;
+    }
+    virtual bool sendError(std::string&&, std::exception* exception = nullptr) const
+    {
+        return m_level <= LoggingLevel::ERROR;
+    }
 
    protected:
     LoggingLevel m_level;
