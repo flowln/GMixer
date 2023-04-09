@@ -58,6 +58,7 @@ PipelineEditor::PipelineEditor(Gtk::Widget& parent, Pipeline* pipeline)
 
 PipelineEditor::PipelineGraph::PipelineGraph(PipelineEditor* parent)
     : Gtk::Box(Gtk::Orientation::VERTICAL)
+    , m_mode(OperationMode::MODE_SELECT)
     , m_editor(parent)
     , m_bar()
     , m_mode_select("Select")
@@ -95,7 +96,7 @@ PipelineEditor::PipelineGraph::PipelineGraph(PipelineEditor* parent)
 
     // Sets up keyboard shortcuts
     // Return to previous mode when key is released
-    static OperationMode last_mode;
+    static OperationMode last_mode = m_mode;
 
     auto key_controller = Gtk::EventControllerKey::create();
     key_controller->signal_key_pressed().connect(
@@ -130,6 +131,8 @@ PipelineEditor::PipelineGraph::PipelineGraph(PipelineEditor* parent)
     // Add everything to 'PipelineGraph'
     append(*m_viewer);
     append(m_bar);
+
+    setMode(last_mode);
 }
 void PipelineEditor::PipelineGraph::addElement(Element* element)
 {
@@ -142,7 +145,7 @@ void PipelineEditor::PipelineGraph::setMode(OperationMode new_mode)
     m_mode = new_mode;
     switch (new_mode) {
         case OperationMode::MODE_SELECT:
-            set_cursor("grab");
+            set_cursor();
             break;
         case OperationMode::MODE_MOVE:
             set_cursor(move_cursor);

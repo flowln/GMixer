@@ -16,7 +16,7 @@ class Node;
 class GraphViewer;
 class PipelineEditor;
 
-enum class OperationMode{
+enum class OperationMode {
     MODE_SELECT,
     MODE_MOVE,
     MODE_CUT,
